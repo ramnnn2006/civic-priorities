@@ -9,11 +9,6 @@ import { ThinkingOrb } from 'thinking-orbs'
 import { categoryMeta, configs } from './data'
 import { findCategory, makeDraft, scoreCandidates } from './engine'
 import type { CandidateResult, ConfigId, Draft, AuthUser, UserRole, ReviewerMetadata } from './types'
-import {
-  AnimatedNumber, RollingText, ScoreOrbit, DynamicIslandToast,
-  EvidenceGate, ProgressiveBlur, EndorsementSeal,
-  CopilotEntrance, CopilotCardWrapper,
-} from './brik'
 import { PrivacyPage } from './pages/PrivacyPage'
 import { TermsPage } from './pages/TermsPage'
 import { ThankYouPage } from './pages/ThankYouPage'
