@@ -39,6 +39,25 @@ export interface Draft {
   locale: Locale
   status: 'draft' | 'confirmed'
   spans: { start: number; end: number; quote: string; field: string }[]
+  author?: { name: string; role: UserRole; organization?: string }
+}
+
+export type UserRole = 'planner' | 'auditor' | 'citizen'
+
+export interface AuthUser {
+  id: string
+  name: string
+  email: string
+  role: UserRole
+  organization: string
+  createdAt?: string
+}
+
+export interface ReviewerMetadata {
+  id?: string
+  name?: string
+  role?: string
+  organization?: string
 }
 
 export type Eligibility = 'ELIGIBLE' | 'BLOCKED' | 'ALREADY_FUNDED' | 'BUDGET_EXCLUDED'

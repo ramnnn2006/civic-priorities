@@ -81,6 +81,34 @@ describe('planning API', () => {
     expect(explained.json.evidenceHash).toBeDefined()
   })
 
+  it('authenticates demo users and validates session state', async () => {
+    const demo = await (await fetch(`${base}/api/auth/demo-users`)).json() as { email: string; role: string }[]
+    expect(demo.length).toBe(3)
+    expect(demo.some((u) => u.role === 'planner')).toBe(true)
+
+    const login = await request('/api/auth/sign-in/email', { email: 'maya.sundaram@civic.tn.gov.in', password: 'planner123' })
+    expect(login.response.status).toBe(200)
+    const token = login.json.token as string
+    expect(token).toBeDefined()
+
+    const sessionRes = await fetch(`${base}/api/auth/get-session`, { headers: { Authorization: `Bearer ${token}` } })
+    const sessionData = await sessionRes.json() as { user: { role: string; name: string } }
+    expect(sessionData.user.role).toBe('planner')
+    expect(sessionData.user.name).toBe('Maya Sundaram')
+
+    const planned = await request('/api/v1/plans/compute', { sessionId, configId: 'IN-TN', category: 'water', demandWeight: .5, simulateMissingInvestment: false })
+    const plan = planned.json as { id: string; revision: number }
+    const reviewed = await request(`/api/v1/plans/${plan.id}/review`, {
+      sessionId,
+      decision: 'reviewed',
+      note: 'Certified by Municipal Planner',
+      expectedRevision: plan.revision,
+      reviewer: { id: 'usr-planner-01', name: 'Maya Sundaram', role: 'planner', organization: 'Tamil Nadu Urban Development Board' }
+    })
+    expect(reviewed.response.status).toBe(201)
+    expect((reviewed.json as { reviewer: { name: string } }).reviewer.name).toBe('Maya Sundaram')
+  })
+
   it('returns JSON 404 for an unknown API route', async () => {
     const unknown = await request('/api/v1/not-a-route')
     expect(unknown.response.status).toBe(404)

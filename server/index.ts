@@ -14,8 +14,38 @@ const configId = z.enum(['IN-TN', 'IN-UP', 'BR-PE'])
 const uuid = z.string().uuid()
 const sessionTtlMs = 24 * 60 * 60 * 1000
 
+export type UserRole = 'planner' | 'auditor' | 'citizen'
+export interface User {
+  id: string
+  name: string
+  email: string
+  role: UserRole
+  organization: string
+  createdAt: string
+  passwordHash?: string
+}
+export interface AuthSession {
+  token: string
+  userId: string
+  expiresAt: number
+}
+
 type StoredDraft = { draft: Draft; configId: ConfigId; expiresAt: number }
-type StoredPlan = { id: string; revision: number; configId: ConfigId; category: 'water' | 'roads' | 'lighting'; candidates: CandidateResult[]; evidenceHash: string; createdAt: string; reviewed?: { decision: 'reviewed' | 'rejected'; note: string; savedAt: string } }
+type StoredPlan = {
+  id: string
+  revision: number
+  configId: ConfigId
+  category: 'water' | 'roads' | 'lighting'
+  candidates: CandidateResult[]
+  evidenceHash: string
+  createdAt: string
+  reviewed?: {
+    decision: 'reviewed' | 'rejected'
+    note: string
+    savedAt: string
+    reviewer?: { id?: string; name?: string; role?: string; organization?: string }
+  }
+}
 type Session = { touchedAt: number; drafts: Map<string, StoredDraft>; confirmed: Draft[]; plans: Map<string, StoredPlan> }
 
 const getConfig = (id: ConfigId) => configs.find((config) => config.id === id)!
@@ -107,7 +137,107 @@ Respond ONLY with a valid JSON object matching { "summary": "...", "reasons": [.
 export function createApp() {
   const app = express()
   const sessions = new Map<string, Session>()
+  const users = new Map<string, User>()
+  const authSessions = new Map<string, AuthSession>()
+
+  const seedUsers: User[] = [
+    {
+      id: 'usr-planner-01',
+      name: 'Maya Sundaram',
+      email: 'maya.sundaram@civic.tn.gov.in',
+      role: 'planner',
+      organization: 'Tamil Nadu Urban Development Board',
+      passwordHash: createHash('sha256').update('planner123').digest('hex'),
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: 'usr-auditor-01',
+      name: 'Rajesh Sharma',
+      email: 'rajesh.sharma@open-audit.org',
+      role: 'auditor',
+      organization: 'Independent Civic Planning Observatory',
+      passwordHash: createHash('sha256').update('auditor123').digest('hex'),
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: 'usr-citizen-01',
+      name: 'Priya Anandan',
+      email: 'priya.anandan@community.org',
+      role: 'citizen',
+      organization: 'Kovilpatti Ward 4 Residents Forum',
+      passwordHash: createHash('sha256').update('citizen123').digest('hex'),
+      createdAt: new Date().toISOString()
+    }
+  ]
+  seedUsers.forEach((u) => users.set(u.id, u))
+
   app.use(express.json({ limit: '1mb' }))
+
+  // Better-Auth compatible endpoints
+  app.get('/api/auth/demo-users', (_req, res) => {
+    res.json(Array.from(users.values()).map(({ passwordHash, ...u }) => u))
+  })
+
+  app.get('/api/auth/get-session', (req, res) => {
+    const authHeader = req.headers.authorization
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : (req.headers['x-session-token'] as string)
+    if (!token) return res.json({ session: null, user: null })
+    const session = authSessions.get(token)
+    if (!session || session.expiresAt < Date.now()) return res.json({ session: null, user: null })
+    const user = users.get(session.userId)
+    if (!user) return res.json({ session: null, user: null })
+    const { passwordHash, ...safeUser } = user
+    return res.json({ session: { token: session.token, expiresAt: session.expiresAt }, user: safeUser })
+  })
+
+  app.post('/api/auth/sign-in/email', (req, res) => {
+    const body = z.object({ email: z.string().email(), password: z.string().min(6) }).safeParse(req.body)
+    if (!body.success) return apiError(res, 400, 'Invalid email or password format')
+    const user = Array.from(users.values()).find((u) => u.email.toLowerCase() === body.data.email.toLowerCase())
+    if (!user) return apiError(res, 401, 'Invalid email or password')
+    const hash = createHash('sha256').update(body.data.password).digest('hex')
+    if (user.passwordHash !== hash) return apiError(res, 401, 'Invalid email or password')
+    const token = randomUUID()
+    const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000
+    authSessions.set(token, { token, userId: user.id, expiresAt })
+    const { passwordHash, ...safeUser } = user
+    return res.json({ token, user: safeUser })
+  })
+
+  app.post('/api/auth/sign-up/email', (req, res) => {
+    const body = z.object({
+      name: z.string().min(2).max(100),
+      email: z.string().email(),
+      password: z.string().min(6),
+      role: z.enum(['planner', 'auditor', 'citizen']).default('citizen'),
+      organization: z.string().max(120).default('Public Citizen')
+    }).safeParse(req.body)
+    if (!body.success) return apiError(res, 400, 'Invalid registration details')
+    const existing = Array.from(users.values()).find((u) => u.email.toLowerCase() === body.data.email.toLowerCase())
+    if (existing) return apiError(res, 409, 'User with this email already exists')
+    const newUser: User = {
+      id: `usr-${randomUUID().slice(0, 8)}`,
+      name: body.data.name,
+      email: body.data.email,
+      role: body.data.role,
+      organization: body.data.organization,
+      passwordHash: createHash('sha256').update(body.data.password).digest('hex'),
+      createdAt: new Date().toISOString()
+    }
+    users.set(newUser.id, newUser)
+    const token = randomUUID()
+    const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000
+    authSessions.set(token, { token, userId: newUser.id, expiresAt })
+    const { passwordHash, ...safeUser } = newUser
+    return res.status(201).json({ token, user: safeUser })
+  })
+
+  app.post('/api/auth/sign-out', (req, res) => {
+    const authHeader = req.headers.authorization
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : (req.headers['x-session-token'] as string)
+    if (token) authSessions.delete(token)
+    return res.json({ success: true })
+  })
 
   app.get('/health', (_req, res) => res.json({
     status: 'ok',
@@ -219,12 +349,28 @@ export function createApp() {
     res.json({ planId: plan.id, revision: plan.revision, evidenceHash: plan.evidenceHash, provider, rationale })
   })
   app.post('/api/v1/plans/:id/review', (req, res) => {
-    const body = z.object({ sessionId: uuid, decision: z.enum(['reviewed', 'rejected']), note: z.string().max(1000).default(''), expectedRevision: z.number().int().positive() }).safeParse(req.body)
+    const body = z.object({
+      sessionId: uuid,
+      decision: z.enum(['reviewed', 'rejected']),
+      note: z.string().max(1000).default(''),
+      expectedRevision: z.number().int().positive(),
+      reviewer: z.object({
+        id: z.string().optional(),
+        name: z.string().optional(),
+        role: z.string().optional(),
+        organization: z.string().optional()
+      }).optional()
+    }).safeParse(req.body)
     if (!body.success) return apiError(res, 422, 'Invalid review')
     const plan = loadPlan(req, res)
     if (!plan) return
     if (plan.revision !== body.data.expectedRevision) return apiError(res, 409, 'Planning run was updated; reload before reviewing')
-    plan.reviewed = { decision: body.data.decision, note: body.data.note, savedAt: new Date().toISOString() }
+    plan.reviewed = {
+      decision: body.data.decision,
+      note: body.data.note,
+      savedAt: new Date().toISOString(),
+      ...(body.data.reviewer ? { reviewer: body.data.reviewer } : {})
+    }
     plan.revision += 1
     return res.status(201).json({ id: plan.id, revision: plan.revision, ...plan.reviewed })
   })

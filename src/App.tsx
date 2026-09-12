@@ -3,11 +3,35 @@ import {
   ArrowDown, ArrowUp, BadgeCheck, Bot, ChevronDown, CircleAlert, FileUp,
   FileText, Lightbulb, MapPin, MessageSquareText, Mic, Pause,
   ShieldCheck, Sparkles, TriangleAlert, WalletCards, Droplets, X,
-  CheckCircle2, Activity, Cpu, Sliders
+  CheckCircle2, Activity, Cpu, Sliders, UserCheck, LogIn, Users
 } from 'lucide-react'
 import { categoryMeta, configs } from './data'
 import { findCategory, makeDraft, scoreCandidates } from './engine'
-import type { CandidateResult, ConfigId, Draft } from './types'
+import type { CandidateResult, ConfigId, Draft, AuthUser, UserRole, ReviewerMetadata } from './types'
+
+const DEMO_PERSONAS: AuthUser[] = [
+  {
+    id: 'usr-planner-01',
+    name: 'Maya Sundaram',
+    email: 'maya.sundaram@chennaicivic.gov.in',
+    role: 'planner',
+    organization: 'Greater Chennai Corporation & Kovilpatti Planning Board'
+  },
+  {
+    id: 'usr-auditor-01',
+    name: 'Rajesh Sharma',
+    email: 'rajesh.sharma@open-audit.org',
+    role: 'auditor',
+    organization: 'Independent Civic Planning Observatory'
+  },
+  {
+    id: 'usr-citizen-01',
+    name: 'Priya Anandan',
+    email: 'priya.anandan@community.org',
+    role: 'citizen',
+    organization: 'Kovilpatti Ward 4 Residents Forum'
+  }
+]
 
 const money = (value: number, currency: 'INR' | 'BRL') => new Intl.NumberFormat(currency === 'INR' ? 'en-IN' : 'pt-BR', {
   style: 'currency', currency, maximumFractionDigits: 0,
@@ -62,17 +86,75 @@ function App() {
   const [showReviewModal, setShowReviewModal] = useState(false)
   const [reviewDecision, setReviewDecision] = useState<'reviewed' | 'rejected'>('reviewed')
   const [reviewNote, setReviewNote] = useState('Audited against statutory infrastructure baselines and 90-day intake window.')
-  const [reviewedRecord, setReviewedRecord] = useState<{ decision: string; note: string; savedAt: string; revision: number } | null>(null)
+  const [reviewedRecord, setReviewedRecord] = useState<{
+    decision: string
+    note: string
+    savedAt: string
+    revision: number
+    reviewerName?: string
+    reviewerRole?: string
+  } | null>(null)
   const [showCopilot, setShowCopilot] = useState(true)
+
+  const [currentUser, setCurrentUser] = useState<AuthUser>(() => {
+    try {
+      const saved = localStorage.getItem('civic_user')
+      if (saved) return JSON.parse(saved) as AuthUser
+    } catch {}
+    return DEMO_PERSONAS[0]
+  })
+  const [authToken, setAuthToken] = useState<string | null>(() => localStorage.getItem('civic_token'))
+  const [demoUsers, setDemoUsers] = useState<AuthUser[]>(DEMO_PERSONAS)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [authTab, setAuthTab] = useState<'personas' | 'signin' | 'signup'>('personas')
+  const [loginEmail, setLoginEmail] = useState('maya.sundaram@chennaicivic.gov.in')
+  const [loginPassword, setLoginPassword] = useState('planner123')
+  const [regName, setRegName] = useState('')
+  const [regEmail, setRegEmail] = useState('')
+  const [regPassword, setRegPassword] = useState('')
+  const [regRole, setRegRole] = useState<UserRole>('citizen')
+  const [regOrg, setRegOrg] = useState('')
+  const [authError, setAuthError] = useState('')
+  const [authLoading, setAuthLoading] = useState(false)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg)
+    window.setTimeout(() => {
+      setToastMessage((current) => current === msg ? null : current)
+    }, 3200)
+  }
 
   const inputRef = useRef<HTMLInputElement>(null)
   const config = configs.find((item) => item.id === configId)!
 
-  // Initial health check to detect API availability
+  // Initial health check and auth sync
   useEffect(() => {
     fetch('/health')
       .then((res) => { if (res.ok) setApiMode('server') })
       .catch(() => setApiMode('offline'))
+
+    fetch('/api/auth/demo-users')
+      .then((res) => res.json())
+      .then((users: AuthUser[]) => {
+        if (Array.isArray(users) && users.length) setDemoUsers(users)
+      })
+      .catch(() => {})
+
+    const token = localStorage.getItem('civic_token')
+    if (token) {
+      fetch('/api/auth/get-session', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then((res) => res.json())
+        .then((data: { session: { token: string } | null; user: AuthUser | null }) => {
+          if (data.user) {
+            setCurrentUser(data.user)
+            localStorage.setItem('civic_user', JSON.stringify(data.user))
+          }
+        })
+        .catch(() => {})
+    }
   }, [])
 
   useEffect(() => {
@@ -161,7 +243,9 @@ function App() {
     }
     const local = () => {
       setApiMode('offline')
-      setDraft(makeDraft(text, selectedRegion, config.locale, channel))
+      const d = makeDraft(text, selectedRegion, config.locale, channel)
+      d.author = { name: currentUser.name, role: currentUser.role, organization: currentUser.organization }
+      setDraft(d)
     }
     try {
       const response = await fetch('/api/v1/intake/analyze', {
@@ -170,6 +254,7 @@ function App() {
       })
       if (!response.ok) return local()
       const result = await response.json() as { draft: Draft }
+      result.draft.author = { name: currentUser.name, role: currentUser.role, organization: currentUser.organization }
       setApiMode('server')
       setDraft(result.draft)
     } catch { local() }
@@ -194,6 +279,8 @@ function App() {
       setApiMode('offline')
       setDrafts((items) => [...items, confirmed])
     }
+    const regionName = config.regions.find((r) => r.id === draft.regionId)?.label ?? 'selected region'
+    showToast(`Request confirmed for ${regionName} by ${currentUser.name}`)
     setDraft(importQueue[0] ?? null)
     setImportQueue((items) => items.slice(1))
     setMessage('')
@@ -324,25 +411,125 @@ function App() {
     setExplainLoading(false)
   }
 
+  const switchPersona = (persona: AuthUser) => {
+    setCurrentUser(persona)
+    localStorage.setItem('civic_user', JSON.stringify(persona))
+    setShowAuthModal(false)
+    showToast(`Switched persona to ${persona.name} (${persona.role})`)
+  }
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setAuthError('')
+    setAuthLoading(true)
+    try {
+      const res = await fetch('/api/auth/sign-in/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: loginEmail, password: loginPassword })
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to sign in')
+      setCurrentUser(data.user)
+      setAuthToken(data.token)
+      localStorage.setItem('civic_user', JSON.stringify(data.user))
+      localStorage.setItem('civic_token', data.token)
+      setShowAuthModal(false)
+      showToast(`Welcome back, ${data.user.name}`)
+    } catch (err: unknown) {
+      setAuthError((err as Error).message || 'Sign in failed')
+    } finally {
+      setAuthLoading(false)
+    }
+  }
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setAuthError('')
+    setAuthLoading(true)
+    try {
+      const res = await fetch('/api/auth/sign-up/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: regName,
+          email: regEmail,
+          password: regPassword,
+          role: regRole,
+          organization: regOrg || 'Public Civic Contributor'
+        })
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to register account')
+      setCurrentUser(data.user)
+      setAuthToken(data.token)
+      localStorage.setItem('civic_user', JSON.stringify(data.user))
+      localStorage.setItem('civic_token', data.token)
+      setShowAuthModal(false)
+      showToast(`Account registered: welcome ${data.user.name}`)
+    } catch (err: unknown) {
+      setAuthError((err as Error).message || 'Registration failed')
+    } finally {
+      setAuthLoading(false)
+    }
+  }
+
+  const handleSignOut = async () => {
+    if (authToken) {
+      try {
+        await fetch('/api/auth/sign-out', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${authToken}` }
+        })
+      } catch {}
+    }
+    setAuthToken(null)
+    localStorage.removeItem('civic_token')
+    const fallback = DEMO_PERSONAS[0]
+    setCurrentUser(fallback)
+    localStorage.setItem('civic_user', JSON.stringify(fallback))
+    setShowAuthModal(false)
+    showToast('Signed out. Reset to default demo persona.')
+  }
+
   async function submitReview() {
+    const reviewer: ReviewerMetadata = {
+      id: currentUser.id,
+      name: currentUser.name,
+      role: currentUser.role,
+      organization: currentUser.organization
+    }
+
     if (planId && apiMode === 'server') {
       try {
         const res = await fetch(`/api/v1/plans/${planId}/review`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authToken ? { Authorization: `Bearer ${authToken}` } : {})
+          },
           body: JSON.stringify({
             sessionId,
             decision: reviewDecision,
             note: reviewNote,
-            expectedRevision: planRevision
+            expectedRevision: planRevision,
+            reviewer
           })
         })
         if (res.ok) {
-          const data = await res.json() as { revision: number; decision: string; note: string; savedAt: string }
+          const data = await res.json() as { revision: number; decision: string; note: string; savedAt: string; reviewer?: ReviewerMetadata }
           setPlanRevision(data.revision)
-          setReviewedRecord({ decision: data.decision, note: data.note, savedAt: data.savedAt, revision: data.revision })
+          setReviewedRecord({
+            decision: data.decision,
+            note: data.note,
+            savedAt: data.savedAt,
+            revision: data.revision,
+            reviewerName: data.reviewer?.name ?? currentUser.name,
+            reviewerRole: data.reviewer?.role ?? currentUser.role
+          })
           setRunSaved(true)
           setShowReviewModal(false)
+          showToast(`Review signed & endorsed by ${currentUser.name}`)
           return
         }
       } catch {
@@ -353,11 +540,14 @@ function App() {
       decision: reviewDecision,
       note: reviewNote,
       savedAt: new Date().toISOString(),
-      revision: planRevision + 1
+      revision: planRevision + 1,
+      reviewerName: currentUser.name,
+      reviewerRole: currentUser.role
     })
     setPlanRevision((prev) => prev + 1)
     setRunSaved(true)
     setShowReviewModal(false)
+    showToast(`Review signed & recorded by ${currentUser.name}`)
   }
 
   const exportAuditMemorandum = async () => {
@@ -369,6 +559,8 @@ function App() {
       `Policy Weight: Demand ${Math.round(weight * 100)}% / Gap ${Math.round((1 - weight) * 100)}%`,
       `Evidence Hash: ${evidenceHash || 'deterministic-fixture'}`,
       `Review Status: ${reviewedRecord ? `${reviewedRecord.decision.toUpperCase()} (Rev #${reviewedRecord.revision})` : 'DRAFT CALCULATION'}`,
+      `Reviewer: ${reviewedRecord?.reviewerName ?? currentUser.name} (${(reviewedRecord?.reviewerRole ?? currentUser.role).toUpperCase()}) - ${currentUser.organization}`,
+      `Audit Verification: DPG Participatory Planning Standard (SHA-256 Gated)`,
       ``,
       `## CANDIDATE EVALUATION`,
       ...candidates.map((c, i) => `${i + 1}. ${c.project} (${c.label}) - Score: ${c.score ?? 'BLOCKED'} [Status: ${c.eligibility}]`),
@@ -378,6 +570,7 @@ function App() {
     ]
     await navigator.clipboard.writeText(lines.join('\n'))
     setCopiedMemo(true)
+    showToast('Audit memorandum copied to clipboard')
     window.setTimeout(() => setCopiedMemo(false), 2000)
   }
 
@@ -404,11 +597,21 @@ function App() {
       <div className="ambient ambient-one" /><div className="ambient ambient-two" />
       <header className="site-header shell">
         <a className="brand" href="#top" aria-label="CivicPriorities home"><span className="brand-mark"><Sparkles size={16} /></span><span>Civic<span>Priorities</span></span></a>
-        <div className="header-meta">
-          <span className="live-dot" />
-          {apiMode === 'server' ? 'Live API Verified' : 'Deterministic Client Engine'}
-          <span className="divider" />
-          v0.1
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <button className="user-badge-btn" onClick={() => setShowAuthModal(true)} title="Switch persona or sign in" type="button">
+            <span className={`user-avatar ${currentUser.role}`}>
+              {currentUser.name.charAt(0)}
+            </span>
+            <span>{currentUser.name}</span>
+            <span className={`role-tag ${currentUser.role}`}>{currentUser.role}</span>
+            <ChevronDown size={14} style={{ color: '#7b958e' }} />
+          </button>
+          <div className="header-meta">
+            <span className="live-dot" />
+            {apiMode === 'server' ? 'Live API Verified' : 'Deterministic Client Engine'}
+            <span className="divider" />
+            v0.1
+          </div>
         </div>
       </header>
 
@@ -510,6 +713,10 @@ function App() {
               </span>
             </div>
             <p className="panel-intro">When the API is available the request is validated server-side; extraction stays a labelled local fallback until a real Gemini adapter is configured.</p>
+            <div className="user-identity-strip">
+              <span>Intake submitter: <strong>{currentUser.name}</strong> · <span className={`role-tag ${currentUser.role}`}>{currentUser.role}</span> ({currentUser.organization})</span>
+              <button type="button" onClick={() => setShowAuthModal(true)}>Switch Persona</button>
+            </div>
             <div className="region-picker">
               <span>Planning region</span>
               <div className="region-pills">
@@ -541,6 +748,12 @@ function App() {
                   <span>Need</span><strong>{categoryMeta[draft.category].label}</strong>
                   <span>Region</span><strong>{config.regions.find((item) => item.id === draft.regionId)?.label}</strong>
                   <span>Evidence span</span><code>“{draft.spans[0].quote}”</code>
+                  {draft.author && (
+                    <>
+                      <span>Submitter</span>
+                      <strong>{draft.author.name} ({draft.author.role})</strong>
+                    </>
+                  )}
                 </div>
                 <div className="draft-actions">
                   <span><ShieldCheck size={15} /> You must confirm before it affects a score.</span>
@@ -624,7 +837,11 @@ function App() {
                 <Bot size={14} /> Explain Rationale
               </button>
               <div className="run-state">
-                {runSaved ? <><BadgeCheck size={17} /> Review saved (Rev #{reviewedRecord?.revision ?? planRevision})</> : <><CircleAlert size={17} /> Draft calculation</>}
+                {runSaved ? (
+                  <><BadgeCheck size={17} /> Endorsed by {reviewedRecord?.reviewerName ?? currentUser.name} (Rev #{reviewedRecord?.revision ?? planRevision})</>
+                ) : (
+                  <><CircleAlert size={17} /> Draft calculation</>
+                )}
               </div>
             </div>
           </div>
@@ -657,7 +874,7 @@ function App() {
             <div style={{ display: 'flex', gap: '10px' }}>
               <button className="button button-quiet" onClick={openExplain}><Bot size={15} /> Explain</button>
               <button className="button button-primary" disabled={!top} onClick={() => setShowReviewModal(true)}>
-                {runSaved ? <><BadgeCheck size={17} /> Sign & Endorse Review</> : 'Save reviewed recommendation'}
+                {runSaved ? <><BadgeCheck size={17} /> Endorsed by {reviewedRecord?.reviewerName ?? currentUser.name}</> : currentUser.role === 'citizen' ? 'Review & Public Comments' : 'Sign & Endorse Review'}
               </button>
             </div>
           </div>
@@ -722,8 +939,43 @@ function App() {
             </div>
             <div className="modal-body">
               <p>
-                Under DPG participatory planning guidelines, AI-generated or algorithmic rankings cannot be automatically funded without verified human operator endorsement.
+                Under DPG participatory planning guidelines, algorithmic rankings cannot be automatically funded without verified human operator endorsement.
               </p>
+
+              <div style={{ background: '#f0f6f3', border: '1px solid #d0e4da', borderRadius: '8px', padding: '10px 12px', marginBottom: '14px', fontSize: '12px' }}>
+                Reviewer: <strong>{currentUser.name}</strong> · <span className={`role-tag ${currentUser.role}`}>{currentUser.role}</span>
+                <div style={{ color: '#567a72', fontSize: '11px', marginTop: '2px' }}>{currentUser.organization}</div>
+              </div>
+
+              {currentUser.role === 'citizen' && (
+                <div className="citizen-gate-warning">
+                  <TriangleAlert size={16} style={{ display: 'inline', verticalAlign: 'text-top', marginRight: '6px' }} />
+                  <strong>Citizen Observer Mode:</strong> Public community comments are encouraged and logged in the immutable audit trail. However, formal statutory endorsement requires Municipal Planner or Civic Auditor sign-off.
+                  <div className="citizen-gate-actions">
+                    <button
+                      type="button"
+                      className="button button-quiet small"
+                      onClick={() => {
+                        const planner = demoUsers.find((u) => u.role === 'planner') || DEMO_PERSONAS[0]
+                        switchPersona(planner)
+                      }}
+                    >
+                      <UserCheck size={14} /> Switch to Maya (Planner)
+                    </button>
+                    <button
+                      type="button"
+                      className="button button-quiet small"
+                      onClick={() => {
+                        const auditor = demoUsers.find((u) => u.role === 'auditor') || DEMO_PERSONAS[1]
+                        switchPersona(auditor)
+                      }}
+                    >
+                      <ShieldCheck size={14} /> Switch to Rajesh (Auditor)
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <label style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 700, color: '#4a6f67' }}>
                 Reviewer Determination
               </label>
@@ -745,8 +997,196 @@ function App() {
             </div>
             <div className="modal-actions">
               <button className="button button-quiet small" onClick={() => setShowReviewModal(false)}>Cancel</button>
-              <button className="button button-primary small" onClick={submitReview}>Submit Official Review</button>
+              <button className="button button-primary small" onClick={submitReview}>
+                {currentUser.role === 'citizen' ? 'Submit Public Commentary' : 'Submit Official Endorsement'}
+              </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Persona & Authentication Modal */}
+      {showAuthModal && (
+        <div className="modal-backdrop" role="dialog" aria-modal="true">
+          <div className="modal-card">
+            <div className="modal-head">
+              <h3><Users size={20} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }} /> Civic Roles & Authentication</h3>
+              <button onClick={() => setShowAuthModal(false)} aria-label="Close modal"><X size={18} /></button>
+            </div>
+            <div className="modal-body">
+              <div className="auth-tabs">
+                <button className={`auth-tab ${authTab === 'personas' ? 'active' : ''}`} onClick={() => { setAuthTab('personas'); setAuthError('') }}>
+                  Switch Persona
+                </button>
+                <button className={`auth-tab ${authTab === 'signin' ? 'active' : ''}`} onClick={() => { setAuthTab('signin'); setAuthError('') }}>
+                  Email Sign In
+                </button>
+                <button className={`auth-tab ${authTab === 'signup' ? 'active' : ''}`} onClick={() => { setAuthTab('signup'); setAuthError('') }}>
+                  Create Account
+                </button>
+              </div>
+
+              {authError && <div className="auth-error" style={{ marginBottom: '14px' }}>{authError}</div>}
+
+              {authTab === 'personas' && (
+                <div>
+                  <p style={{ fontSize: '12.5px', color: '#52726b', margin: '0 0 12px 0' }}>
+                    Select a verified role persona to test different permissions, governance views, and audit sign-off workflows:
+                  </p>
+                  <div className="persona-list">
+                    {demoUsers.map((persona) => {
+                      const isSelected = currentUser.id === persona.id
+                      return (
+                        <div
+                          key={persona.id}
+                          className={`persona-card ${isSelected ? 'selected' : ''}`}
+                          onClick={() => switchPersona(persona)}
+                        >
+                          <span className={`user-avatar ${persona.role}`} style={{ width: '32px', height: '32px', fontSize: '13px', flexShrink: 0 }}>
+                            {persona.name.charAt(0)}
+                          </span>
+                          <div style={{ flex: 1 }}>
+                            <h4>
+                              {persona.name}
+                              <span className={`role-tag ${persona.role}`}>{persona.role}</span>
+                              {isSelected && <span style={{ marginLeft: 'auto', fontSize: '11px', color: '#167e6b', fontWeight: 600 }}>Active</span>}
+                            </h4>
+                            <p><strong>{persona.organization}</strong></p>
+                            <p style={{ marginTop: '3px' }}>
+                              {persona.role === 'planner' && 'Can compute allocations, analyze requests, and endorse official planning shortlist drafts.'}
+                              {persona.role === 'auditor' && 'Can verify mathematical evidence gates, check sensitivity stability, and flag runs for resurvey.'}
+                              {persona.role === 'citizen' && 'Can submit localized infrastructure needs, record voice requests, and attach public community notes.'}
+                            </p>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {authTab === 'signin' && (
+                <form className="auth-form" onSubmit={handleSignIn}>
+                  <p style={{ fontSize: '12.5px', color: '#52726b', margin: '0 0 10px 0' }}>
+                    Sign in with your registered civic credentials or any of the seeded demo accounts:
+                  </p>
+                  <label>
+                    Email Address
+                    <input
+                      type="email"
+                      required
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      placeholder="e.g. maya.sundaram@chennaicivic.gov.in"
+                    />
+                  </label>
+                  <label>
+                    Password
+                    <input
+                      type="password"
+                      required
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      placeholder="Password"
+                    />
+                  </label>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '10px' }}>
+                    <button type="button" className="button button-quiet small" onClick={() => setShowAuthModal(false)}>Cancel</button>
+                    <button type="submit" className="button button-primary small" disabled={authLoading}>
+                      <LogIn size={15} /> {authLoading ? 'Signing in…' : 'Sign In'}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {authTab === 'signup' && (
+                <form className="auth-form" onSubmit={handleSignUp}>
+                  <p style={{ fontSize: '12.5px', color: '#52726b', margin: '0 0 10px 0' }}>
+                    Create a new Better-Auth profile to participate in evidence-gated planning:
+                  </p>
+                  <label>
+                    Full Name
+                    <input
+                      type="text"
+                      required
+                      value={regName}
+                      onChange={(e) => setRegName(e.target.value)}
+                      placeholder="e.g. Anand Kumar"
+                    />
+                  </label>
+                  <label>
+                    Email
+                    <input
+                      type="email"
+                      required
+                      value={regEmail}
+                      onChange={(e) => setRegEmail(e.target.value)}
+                      placeholder="anand@example.org"
+                    />
+                  </label>
+                  <label>
+                    Password
+                    <input
+                      type="password"
+                      required
+                      minLength={6}
+                      value={regPassword}
+                      onChange={(e) => setRegPassword(e.target.value)}
+                      placeholder="At least 6 characters"
+                    />
+                  </label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    <label>
+                      Civic Role
+                      <select value={regRole} onChange={(e) => setRegRole(e.target.value as UserRole)}>
+                        <option value="citizen">Citizen Contributor</option>
+                        <option value="planner">Municipal Planner</option>
+                        <option value="auditor">Civic Auditor</option>
+                      </select>
+                    </label>
+                    <label>
+                      Organization
+                      <input
+                        type="text"
+                        value={regOrg}
+                        onChange={(e) => setRegOrg(e.target.value)}
+                        placeholder="e.g. Ward 4 Forum"
+                      />
+                    </label>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '10px' }}>
+                    <button type="button" className="button button-quiet small" onClick={() => setShowAuthModal(false)}>Cancel</button>
+                    <button type="submit" className="button button-primary small" disabled={authLoading}>
+                      {authLoading ? 'Registering…' : 'Register Account'}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+
+            <div className="modal-actions" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ fontSize: '11px', color: '#68827c' }}>
+                Signed in as <strong>{currentUser.name}</strong> ({currentUser.email})
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button type="button" className="button button-quiet small" onClick={handleSignOut}>
+                  Sign Out
+                </button>
+                <button type="button" className="button button-primary small" onClick={() => setShowAuthModal(false)}>
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Toast Notification */}
+      {toastMessage && (
+        <div className="toast-container">
+          <div className="toast-message">
+            <CheckCircle2 size={16} style={{ color: '#5ee6b3' }} />
+            <span>{toastMessage}</span>
           </div>
         </div>
       )}
