@@ -7,20 +7,25 @@ Last updated: 2026-09-12, Asia/Kolkata
 - Core React/Vite planning workbench implemented with Agentic Civic Auditor Co-Pilot.
 - Express API implemented with intake, confirmation, clusters, planning, explanation and review routes.
 - Dual-runtime deployment ready: standalone Express / Docker container and Vercel Serverless Functions (`api/index.ts` + `vercel.json`).
+- Better-Auth compatible authentication engine with token sessions, role-based authorization, and instant persona switching.
+- Persona Switcher & Identity Bar supporting Municipal Planners, Civic Auditors, and Citizen Contributors.
 - Server-side Google Gemini 2.5 Flash adapter integrated for live AI rationale generation, with resilient local deterministic fallback when no API key is supplied.
 - Interactive Priority Rationale & Evidence Inspector modal with cryptographic SHA-256 evidence hashing and formula derivation trace.
-- Formal human-in-the-loop Municipal Review & Endorsement modal with revision conflict guards.
+- Formal human-in-the-loop Municipal Review & Endorsement modal with revision conflict guards and certified reviewer attribution.
+- Citizen advisory gate informing community members that formal statutory endorsement requires planner or auditor clearance.
 - Live Cluster Intelligence Footprint reporting 90-day intake windows, population denominators, and digital collection equity disclosures.
-- Build, typecheck, and unit/route tests passed (10 tests covering engine invariants, API security, and explainability).
+- Build, typecheck, and unit/route tests passed (11 tests covering engine invariants, API security, explainability, and auth).
 
 ## Completed product behavior
 
 - India/Tamil Nadu, India/Uttar Pradesh and Brazil/Pernambuco synthetic configurations.
-- Text/voice/JSON-import request intake; confirm-before-counting flow.
+- Better-Auth endpoints (`/api/auth/demo-users`, `/api/auth/sign-in/email`, `/api/auth/sign-up/email`, `/api/auth/get-session`, `/api/auth/sign-out`).
+- Text/voice/JSON-import request intake with author tagging; confirm-before-counting flow.
 - Deterministic category-scoped priority calculation, sensitivity control, funding constraint and missing-investment block state.
 - Evidence spans are Unicode-safe; API validates them before confirmation.
 - API-backed mode when served from Express or Vercel Serverless Function, explicit offline fallback when static-only.
 - Agentic Co-Pilot with automated sensitivity simulation ($w=0.8$ demand vs $w=0.2$ gap priority reversal alert), headroom tracking, and one-click Audit Memorandum generator.
+- Floating toast notification system for instant feedback on persona switches, draft confirmations, and review sign-offs.
 
 ## Verified test suite
 

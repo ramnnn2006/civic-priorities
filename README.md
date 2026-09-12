@@ -15,7 +15,8 @@
 - **DPG Evidence Blocking Rule:** A missing investment plan or demographic denominator strictly **blocks** ranking instead of quietly defaulting to zero—preventing neglected regions from being penalized for absent paperwork.
 - **Agentic Civic Auditor Co-Pilot:** Interactive policy sensitivity simulation detecting rank inversions between demand-first ($w=0.8$) and gap-first ($w=0.2$) policies, representation asymmetry detection, and one-click Audit Memorandum export.
 - **AI Rationale & Explainability:** Dual-engine architecture featuring a server-side Google Gemini 2.5 Flash adapter for generative rationale generation with seamless fallback to deterministic rule-based explainability when running offline or without credentials.
-- **Formal Sign-Off & Audit Trail:** Revision-controlled municipal review flow with SHA-256 evidence hashing preventing concurrency race conditions (`HTTP 409 Conflict`).
+- **Role-Based Access Control & Better-Auth:** Multi-persona authentication system with instant role switching between Municipal Planners (e.g. Maya Sundaram), Civic Auditors (e.g. Rajesh Sharma), and Citizen Contributors (e.g. Priya Anandan). Endorsements require certified credentials while public citizen commentary is preserved in immutable audit logs.
+- **Formal Sign-Off & Audit Trail:** Revision-controlled municipal review flow with SHA-256 evidence hashing preventing concurrency race conditions (`HTTP 409 Conflict`) and cryptographic reviewer attribution.
 
 ---
 
@@ -78,7 +79,12 @@ gcloud run deploy civic-priorities \
 | `/api/v1/plans/compute` | `POST` | Compute deterministic candidate rankings, greedy shortlist, and evidence hash |
 | `/api/v1/plans/:id` | `GET` | Retrieve an immutable planning run by ID |
 | `/api/v1/plans/:id/explain` | `GET/POST` | Generate evidence-grounded AI rationale memo with Gemini / deterministic engine |
-| `/api/v1/plans/:id/review` | `POST` | Submit human reviewer endorsement or rejection with revision check |
+| `/api/v1/plans/:id/review` | `POST` | Submit human reviewer endorsement or rejection with reviewer identity |
+| `/api/auth/demo-users` | `GET` | List seeded demo personas (Planner, Auditor, Citizen) |
+| `/api/auth/get-session` | `GET` | Retrieve authenticated user profile and token status |
+| `/api/auth/sign-in/email` | `POST` | Authenticate user via email and password |
+| `/api/auth/sign-up/email` | `POST` | Register a new civic user with custom role and organization |
+| `/api/auth/sign-out` | `POST` | Terminate session and invalidate auth token |
 
 ---
 
