@@ -50,12 +50,12 @@ export function ThankYouPage({ onNavigate, lastConfirmed }: PageProps) {
         <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#d8f5e9', color: '#167a68', display: 'grid', placeItems: 'center', margin: '0 auto 18px' }}>
           <CheckCircle2 size={36} />
         </div>
-        <p className="eyebrow" style={{ justifyContent: 'center' }}><span /> Submission Recorded</p>
+        <p className="eyebrow" style={{ justifyContent: 'center' }}><span /> Request confirmed</p>
         <h1 style={{ fontSize: '38px', margin: '6px 0 12px', color: '#103631' }}>
-          Thank You for Participating
+          Thank you for submitting your request
         </h1>
         <p style={{ color: '#55746d', fontSize: '16px', maxWidth: '560px', margin: '0 auto', lineHeight: 1.55 }}>
-          Your localized infrastructure request has been confirmed and ledgered into the active municipal planning cycle.
+          Your infrastructure need is now saved in the active 90-day municipal intake cycle.
         </p>
       </div>
 
@@ -93,8 +93,8 @@ export function ThankYouPage({ onNavigate, lastConfirmed }: PageProps) {
 
         {lastConfirmed?.text && (
           <div style={{ marginTop: '16px', background: '#f5faf7', border: '1px solid #d7ebe1', borderRadius: '8px', padding: '12px 14px', fontSize: '13px', color: '#2b524b' }}>
-            <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#557a72', display: 'block', marginBottom: '4px' }}>Confirmed Need Description</span>
-            “{lastConfirmed.text}”
+            <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#557a72', display: 'block', marginBottom: '4px' }}>Your Note</span>
+            "{lastConfirmed.text}"
           </div>
         )}
       </div>
@@ -102,26 +102,26 @@ export function ThankYouPage({ onNavigate, lastConfirmed }: PageProps) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '32px' }}>
         <div style={{ background: '#f2f8f5', border: '1px solid #d3e6dd', borderRadius: '12px', padding: '18px' }}>
           <h4 style={{ margin: '0 0 6px', fontSize: '14px', color: '#154b42', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <ShieldCheck size={16} color="#178371" /> What Happens Next?
+            <ShieldCheck size={16} color="#178371" /> What happens next?
           </h4>
           <p style={{ margin: 0, fontSize: '12.5px', color: '#4f6e67', lineHeight: 1.5 }}>
-            Your submission is normalized into the regional demand signal $D$. It combines with verified infrastructure deficit $G$ during sequential budget shortlisting.
+            Your request is counted alongside other community submissions in your area and weighed against physical infrastructure needs.
           </p>
         </div>
 
         <div style={{ background: '#f2f8f5', border: '1px solid #d3e6dd', borderRadius: '12px', padding: '18px' }}>
           <h4 style={{ margin: '0 0 6px', fontSize: '14px', color: '#154b42', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <CheckCircle2 size={16} color="#178371" /> Human Sign-Off Gate
+            <CheckCircle2 size={16} color="#178371" /> Human review required
           </h4>
           <p style={{ margin: 0, fontSize: '12.5px', color: '#4f6e67', lineHeight: 1.5 }}>
-            No project is funded by automated AI. A verified municipal planner or civic auditor reviews every rank and signs off before work begins.
+            No project moves forward on autopilot. A municipal planner or civic auditor reviews every rank and signs off before work begins.
           </p>
         </div>
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
         <button type="button" className="button button-primary" onClick={() => onNavigate('/')}>
-          Return to Workbench & Explore Rankings
+          Return to the workbench
         </button>
       </div>
     </div>

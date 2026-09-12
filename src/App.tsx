@@ -9,6 +9,11 @@ import { ThinkingOrb } from 'thinking-orbs'
 import { categoryMeta, configs } from './data'
 import { findCategory, makeDraft, scoreCandidates } from './engine'
 import type { CandidateResult, ConfigId, Draft, AuthUser, UserRole, ReviewerMetadata } from './types'
+import {
+  AnimatedNumber, RollingText, ScoreOrbit, DynamicIslandToast,
+  EvidenceGate, ProgressiveBlur, EndorsementSeal,
+  CopilotEntrance, CopilotCardWrapper,
+} from './brik'
 import { PrivacyPage } from './pages/PrivacyPage'
 import { TermsPage } from './pages/TermsPage'
 import { ThankYouPage } from './pages/ThankYouPage'
@@ -23,24 +28,24 @@ interface ToastNotification {
 
 const ROUTE_META: Record<string, { title: string; description: string }> = {
   '/': {
-    title: 'CivicPriorities — Evidence, Not Guesswork',
-    description: 'Evidence-gated civic planning engine and participatory decision-support workbench.'
+    title: 'CivicPriorities: Evidence, Not Guesswork',
+    description: 'A clear civic planning tool that turns multilingual community requests into reviewable project priorities.'
   },
   '/privacy': {
-    title: 'Privacy Policy — CivicPriorities',
-    description: 'Ephemeral client intake, non-tracking data governance, and open civic privacy standards.'
+    title: 'Privacy Policy: CivicPriorities',
+    description: 'How we handle intake data, voice inputs, and why we do not track you across the web.'
   },
   '/terms': {
-    title: 'Terms of Service & Model Governance — CivicPriorities',
-    description: 'Participatory civic governance, statutory audit requirements, and non-discriminatory algorithmic decision support guidelines.'
+    title: 'Terms of Service and Model Rules: CivicPriorities',
+    description: 'Why every score requires human review and why missing evidence blocks a rank instead of guessing.'
   },
   '/thank-you': {
-    title: 'Contribution Confirmed — CivicPriorities',
-    description: 'Your municipal infrastructure request has been confirmed and ledgered into the active 90-day planning cycle.'
+    title: 'Request Confirmed: CivicPriorities',
+    description: 'Your infrastructure request is saved in the active 90-day planning cycle.'
   },
   '404': {
-    title: '404: Route Not Shortlisted — CivicPriorities',
-    description: 'The requested civic planning page or document could not be found.'
+    title: 'Page Not Found: CivicPriorities',
+    description: 'We could not find the page or planning document you were looking for.'
   }
 }
 
@@ -120,7 +125,7 @@ function App() {
   const [explainData, setExplainData] = useState<ExplainPayload | null>(null)
   const [showReviewModal, setShowReviewModal] = useState(false)
   const [reviewDecision, setReviewDecision] = useState<'reviewed' | 'rejected'>('reviewed')
-  const [reviewNote, setReviewNote] = useState('Audited against statutory infrastructure baselines and 90-day intake window.')
+  const [reviewNote, setReviewNote] = useState('Checked against current survey records and the 90-day community intake list.')
   const [reviewedRecord, setReviewedRecord] = useState<{
     decision: string
     note: string
@@ -330,7 +335,7 @@ function App() {
   async function analyzeText(text: string, channel: Draft['channel']) {
     setIntakeError('')
     if (findCategory(text) !== selected.category) {
-      const msg = `This request matches ${categoryMeta[findCategory(text)].label}, but ${selected.label} is configured for ${categoryMeta[selected.category].label}. Choose a compatible planning region first.`
+      const msg = `This message is about ${categoryMeta[findCategory(text)].label.toLowerCase()}, but ${selected.label} is set to ${categoryMeta[selected.category].label.toLowerCase()}. Pick a matching region first.`
       setIntakeError(msg)
       addToast(msg, 'warning')
       return
@@ -359,8 +364,8 @@ function App() {
 
   function analyze(channel: Draft['channel'] = 'text') {
     if (!message.trim()) {
-      setIntakeError('Please describe a local infrastructure need before analyzing.')
-      addToast('Please enter an infrastructure request first', 'warning')
+      setIntakeError('Please enter a short description of what is needed in your neighborhood.')
+      addToast('Please enter a description first', 'warning')
       return
     }
     setIntakeError('')
@@ -391,9 +396,9 @@ function App() {
       authorRole: currentUser.role
     })
     addToast(
-      `Request confirmed for ${regionName} by ${currentUser.name}`,
+      `Request recorded for ${regionName} by ${currentUser.name}`,
       'success',
-      { label: 'View Receipt', onClick: () => navigate('/thank-you') }
+      { label: 'View receipt', onClick: () => navigate('/thank-you') }
     )
     setDraft(importQueue[0] ?? null)
     setImportQueue((items) => items.slice(1))
@@ -404,7 +409,7 @@ function App() {
   async function queueImport(records: string[]) {
     const compatible = records.filter((text) => findCategory(text) === selected.category)
     if (!compatible.length) {
-      const msg = 'No imported messages match the selected planning region/category.'
+      const msg = 'None of the imported messages match the selected planning region or category.'
       setIntakeError(msg)
       addToast(msg, 'error')
       return
@@ -417,13 +422,13 @@ function App() {
       setApiMode('server')
       setDraft(result.drafts[0] ?? null)
       setImportQueue(result.drafts.slice(1))
-      addToast(`Imported ${compatible.length} records into the intake queue`, 'success')
-      if (result.errors.length) addToast(`${result.errors.length} messages require different regions and were skipped.`, 'warning')
+      addToast(`Imported ${compatible.length} requests into the review queue`, 'success')
+      if (result.errors.length) addToast(`${result.errors.length} messages belong to other categories and were skipped.`, 'warning')
     } catch {
       setApiMode('offline')
       setDraft(localDrafts[0] ?? null)
       setImportQueue(localDrafts.slice(1))
-      addToast(`Imported ${compatible.length} records into local queue`, 'info')
+      addToast(`Imported ${compatible.length} requests into local queue`, 'info')
     }
     setRunSaved(false)
   }
@@ -514,18 +519,18 @@ function App() {
       evidenceHash: evidenceHash || undefined,
       rationale: {
         summary: topCandidate
-          ? `${topCandidate.project} (${topCandidate.label}) is ranked highest based on ${topCandidate.requestUnits} verified requests (${topCandidate.rate.toFixed(1)}/1k residents) and a ${(topCandidate.gap * 100).toFixed(0)}% infrastructure deficit.`
-          : 'No candidate is currently shortlisted under the active constraints.',
+          ? `${topCandidate.project} in ${topCandidate.label} is ranked first right now. It has ${topCandidate.requestUnits} verified resident requests (${topCandidate.rate.toFixed(1)} per 1,000 people) and a ${(topCandidate.gap * 100).toFixed(0)}% infrastructure gap.`
+          : 'No project is currently shortlisted under these settings.',
         reasons: [
-          `Score combines normalized demand D (${topCandidate ? topCandidate.demand.toFixed(2) : '0'}) at ${Math.round(weight * 100)}% weight and infrastructure gap G (${topCandidate ? topCandidate.gap.toFixed(2) : '0'}) at ${Math.round((1 - weight) * 100)}% weight.`,
+          `We weighted public requests at ${Math.round(weight * 100)}% and the physical infrastructure gap at ${Math.round((1 - weight) * 100)}%.`,
           blockedCandidate
-            ? `${blockedCandidate.project} is excluded from ranking due to unverified investment inventory evidence, adhering to DPG non-zero blocking standards.`
-            : 'All evaluated candidates possess verified baseline investment evidence.',
-          `The top priority fits within the ${money(candidates[0]?.budgetMinor ?? 0, config.currency)} regional envelope.`
+            ? `${blockedCandidate.project} is paused because baseline inventory records are missing. We never treat missing records as a zero score.`
+            : 'All candidate projects have verified survey records on file.',
+          `The top project fits inside the regional budget of ${money(candidates[0]?.budgetMinor ?? 0, config.currency)}.`
         ],
         caveats: [
-          'Local fallback explanation (set server-side GEMINI_API_KEY for live generative rationale).',
-          'Transparent decision-support prototype. Requires human municipal authority verification before allocation.'
+          'This is a decision-support preview. A qualified municipal planner or auditor must verify the numbers before any funding is approved.',
+          'Rankings are meant to guide public discussion, not make automatic spending decisions.'
         ]
       }
     })
@@ -700,25 +705,25 @@ function App() {
 
   const exportAuditMemorandum = async () => {
     const lines = [
-      `# CIVIC PLANNING AUDIT MEMORANDUM`,
-      `Jurisdiction: ${config.country} - ${config.state} (${config.locale})`,
-      `Timestamp: ${new Date().toISOString()}`,
-      `Planning Category: ${categoryMeta[planningCategory].label}`,
+      `CIVIC PLANNING AUDIT MEMO`,
+      `Jurisdiction: ${config.country}, ${config.state} (${config.locale})`,
+      `Date: ${new Date().toISOString()}`,
+      `Category: ${categoryMeta[planningCategory].label}`,
       `Policy Weight: Demand ${Math.round(weight * 100)}% / Gap ${Math.round((1 - weight) * 100)}%`,
       `Evidence Hash: ${evidenceHash || 'deterministic-fixture'}`,
-      `Review Status: ${reviewedRecord ? `${reviewedRecord.decision.toUpperCase()} (Rev #${reviewedRecord.revision})` : 'DRAFT CALCULATION'}`,
+      `Review Status: ${reviewedRecord ? `${reviewedRecord.decision.toUpperCase()} (Rev #${reviewedRecord.revision})` : 'Draft calculation'}`,
       `Reviewer: ${reviewedRecord?.reviewerName ?? currentUser.name} (${(reviewedRecord?.reviewerRole ?? currentUser.role).toUpperCase()}) - ${currentUser.organization}`,
-      `Audit Verification: DPG Participatory Planning Standard (SHA-256 Gated)`,
+      `Standards: DPG Participatory Planning Standard`,
       ``,
-      `## CANDIDATE EVALUATION`,
-      ...candidates.map((c, i) => `${i + 1}. ${c.project} (${c.label}) - Score: ${c.score ?? 'BLOCKED'} [Status: ${c.eligibility}]`),
+      `CANDIDATE PROJECTS`,
+      ...candidates.map((c, i) => `${i + 1}. ${c.project} (${c.label}) - Score: ${c.score ?? 'Paused'} [Status: ${c.eligibility}]`),
       ``,
-      `## AUDIT NOTES`,
-      reviewedRecord?.note ?? 'Draft evaluation run. Awaiting formal municipal sign-off.'
+      `NOTES`,
+      reviewedRecord?.note ?? 'Draft evaluation run. Awaiting municipal sign-off.'
     ]
     await navigator.clipboard.writeText(lines.join('\n'))
     setCopiedMemo(true)
-    addToast('Audit memorandum copied to clipboard', 'info')
+    addToast('Audit memo copied to clipboard', 'info')
     window.setTimeout(() => setCopiedMemo(false), 2000)
   }
 
@@ -735,8 +740,8 @@ function App() {
       topGap,
       flips,
       description: flips
-        ? `Policy Inversion Warning: At 80% demand weighting, ${topDemand} is shortlisted. At 80% infrastructure gap weighting, ${topGap} takes priority.`
-        : `Policy Stability: ${topDemand} maintains top rank across both 80% demand and 80% gap weightings.`
+        ? `If you weigh resident requests at 80%, ${topDemand} ranks first. If you focus 80% on existing infrastructure gaps, ${topGap} takes priority instead.`
+        : `${topDemand} stays at the top whether you lean heavily toward public requests or existing infrastructure gaps.`
     }
   }, [comparableRegions, drafts])
 
@@ -784,9 +789,9 @@ function App() {
         <div className="hero-copy">
           <p className="eyebrow"><span /> Evidence-gated civic planning</p>
           <h1>Make public priorities <em>explainable.</em></h1>
-          <p className="hero-text">Turn multilingual development requests into transparent, reviewable project priorities. Evidence gaps block a rank — they never become a guess.</p>
+          <p className="hero-text">Turn multilingual community requests into clear, reviewable project priorities. If evidence is missing, the system pauses the ranking instead of guessing.</p>
           <div className="hero-actions">
-            <a className="button button-primary" href="#workspace">Try a development request <ArrowDown size={17} /></a>
+            <a className="button button-primary" href="#workspace">Try a request <ArrowDown size={17} /></a>
             <button className="button button-quiet" onClick={openExplain}><Bot size={16} /> Explain Priority Rationale</button>
             <button className="button button-quiet" onClick={exportSnapshot}>{copied ? 'Copied snapshot' : 'Export demo snapshot'}</button>
           </div>
@@ -818,7 +823,7 @@ function App() {
             <p className="eyebrow"><span /> Interactive prototype</p>
             <h2>Planning workbench</h2>
           </div>
-          <p>All regional values are clearly labelled synthetic demo fixtures with Unicode-safe evidence tracking.</p>
+          <p>Test how local requests and infrastructure data shape real project priorities. All figures here are realistic demo examples.</p>
         </div>
 
         <div className="config-bar">
@@ -845,8 +850,8 @@ function App() {
         {/* Cluster Demographics & Collection Footprint */}
         <div className="cluster-strip" aria-label="Reporting Cluster Demographics">
           <div className="cluster-strip-head">
-            <h4><Activity size={15} /> Reporting Footprint & Collection Signals ({config.state})</h4>
-            <span className="pill pill-aqua">Declared Coverage · 90-Day Window</span>
+            <h4><Activity size={15} /> Neighborhood overview and intake status ({config.state})</h4>
+            <span className="pill pill-aqua">Active 90-day cycle</span>
           </div>
           <div className="cluster-grid">
             {clusterData.map((c) => (
@@ -865,7 +870,7 @@ function App() {
           </div>
           <div className="equity-alert">
             <CircleAlert size={14} />
-            <span><strong>Collection Equity Disclosure:</strong> Unequal digital connectivity must not penalize silent areas. Planners must supplement digital intake with field assessments.</span>
+            <span>Areas with fewer smartphones or slower connections should never lose out. Planners need to back up online submissions with in-person field surveys.</span>
           </div>
         </div>
 
@@ -877,7 +882,7 @@ function App() {
                 <Bot size={15} /> {apiMode === 'server' ? 'Server-backed API' : 'Local extraction fallback'}
               </span>
             </div>
-            <p className="panel-intro">When the API is available the request is validated server-side; extraction stays a labelled local fallback until a real Gemini adapter is configured.</p>
+            <p className="panel-intro">When the server is connected, your request is checked live. If you are offline, it runs locally so you can still test the full workflow.</p>
             <div className="user-identity-strip">
               <span>Intake submitter: <strong>{currentUser.name}</strong> · <span className={`role-tag ${currentUser.role}`}>{currentUser.role}</span> ({currentUser.organization})</span>
               <button type="button" onClick={() => setShowAuthModal(true)}>Switch Persona</button>
@@ -892,14 +897,14 @@ function App() {
                 ))}
               </div>
             </div>
-            <label className="message-label" htmlFor="request">Development request</label>
+            <label className="message-label" htmlFor="request">Community request</label>
             <textarea
               id="request"
               className={intakeError ? 'input-error' : ''}
               value={message}
               onChange={(e) => { setMessage(e.target.value); if (intakeError) setIntakeError('') }}
               maxLength={5000}
-              placeholder="Describe a local infrastructure need…"
+              placeholder="Describe an infrastructure need in your neighborhood..."
             />
             {intakeError && (
               <div className="field-error">
@@ -926,7 +931,7 @@ function App() {
                 >
                   {isAnalyzing ? (
                     <>
-                      <ThinkingOrb state="searching" size={20} /> Analyzing…
+                      <ThinkingOrb state="searching" size={20} /> Analyzing...
                     </>
                   ) : (
                     <>
@@ -966,7 +971,7 @@ function App() {
               <div><span className="step">03</span><h3 id="policy-title">Policy lens</h3></div>
               <span className="policy-version">v1.0</span>
             </div>
-            <p className="panel-intro">Weights are transparent demo assumptions, not a welfare model or judging criteria.</p>
+            <p className="panel-intro">Adjust how much weight goes to community requests versus physical infrastructure gaps.</p>
             <label className="range-label">Demand signal <strong>{Math.round(weight * 100)}%</strong></label>
             <input className="range" type="range" min="0" max="1" step=".05" value={weight} onChange={(e) => { setWeight(Number(e.target.value)); setRunSaved(false) }} />
             <div className="range-ends">
@@ -982,45 +987,45 @@ function App() {
               <span className="toggle-dot" />
               {missingPlan ? 'Restore investment evidence' : 'Simulate missing investment evidence'}
             </button>
-            <p className="fine-print">Missing evidence blocks a candidate; it never becomes a zero score.</p>
+            <p className="fine-print">Missing records pause the project instead of giving it a zero score.</p>
           </aside>
         </div>
 
-        {/* Agentic Planning Co-Pilot Strip */}
+        {/* Planning Assistant Strip */}
         {showCopilot && (
           <div className="copilot-strip">
             <div className="copilot-header">
-              <h3><Bot size={22} /> Civic Planning Agentic Co-Pilot</h3>
+              <h3><Bot size={22} /> Planning Assistant</h3>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <button className="button button-quiet" style={{ color: '#fff', borderColor: '#35756a', minHeight: '32px', fontSize: '12px' }} onClick={exportAuditMemorandum}>
                   <FileText size={14} /> {copiedMemo ? 'Copied Memorandum' : 'Export Audit Memo'}
                 </button>
                 <span className="copilot-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                   <span className="orb-inline"><ThinkingOrb state="breathing" size={20} /></span>
-                  Policy Auditor Active
+                  Assistant Active
                 </span>
               </div>
             </div>
             <p style={{ color: '#bfe0d5', fontSize: '13px', margin: '0 0 10px 0' }}>
-              Autonomous decision audit examining mathematical equity invariants, policy sensitivity shifts, and investment gates.
+              A quick check on whether changing weights flips the top project, and whether all survey records are intact.
             </p>
             <div className="copilot-insights">
               <div className="copilot-card">
-                <h4><Sliders size={14} /> Policy Sensitivity Simulation</h4>
+                <h4><Sliders size={14} /> Sensitivity check</h4>
                 <p>{sensitivityNotes?.description}</p>
               </div>
               <div className="copilot-card">
-                <h4><ShieldCheck size={14} /> Evidence Gate Integrity</h4>
+                <h4><ShieldCheck size={14} /> Survey records check</h4>
                 <p>
                   {missingPlan
-                    ? '⚠️ Missing investment inventory active: Candidate rank blocked without corrupting demand history.'
-                    : 'Verified baseline inventory present: All projects pass gatekeeper audit.'}
+                    ? 'Missing survey records detected. This project is on hold until paperwork is restored.'
+                    : 'All baseline survey records are accounted for.'}
                 </p>
               </div>
               <div className="copilot-card">
-                <h4><WalletCards size={14} /> Envelope Constraint</h4>
+                <h4><WalletCards size={14} /> Budget limit</h4>
                 <p>
-                  Local budget: <strong>{money(candidates[0]?.budgetMinor ?? 0, config.currency)}</strong>. Shortlist algorithm uses sequential greedy fit without overshooting.
+                  Local budget is <strong>{money(candidates[0]?.budgetMinor ?? 0, config.currency)}</strong>. Projects are added in rank order until this cap is reached.
                 </p>
               </div>
             </div>
@@ -1067,15 +1072,15 @@ function App() {
           <div className="review-bar">
             <div>
               {top ? (
-                <><BadgeCheck size={19} /><span><strong>{top.project}</strong> is in the current greedy draft shortlist. It is not an allocation.</span></>
+                <><BadgeCheck size={19} /><span><strong>{top.project}</strong> is in the current draft shortlist. This is a recommendation, not an approval to spend funds.</span></>
               ) : (
-                <><TriangleAlert size={19} /><span>No candidate can be shortlisted until blocked evidence is restored.</span></>
+                <><TriangleAlert size={19} /><span>No candidate can be shortlisted until missing records are restored.</span></>
               )}
             </div>
             <div style={{ display: 'flex', gap: '10px' }}>
               <button className="button button-quiet" onClick={openExplain}><Bot size={15} /> Explain</button>
               <button className="button button-primary" disabled={!top} onClick={() => setShowReviewModal(true)}>
-                {runSaved ? <><BadgeCheck size={17} /> Endorsed by {reviewedRecord?.reviewerName ?? currentUser.name}</> : currentUser.role === 'citizen' ? 'Review & Public Comments' : 'Sign & Endorse Review'}
+                {runSaved ? <><BadgeCheck size={17} /> Endorsed by {reviewedRecord?.reviewerName ?? currentUser.name}</> : currentUser.role === 'citizen' ? 'Review & Comments' : 'Sign & Endorse Review'}
               </button>
             </div>
           </div>
@@ -1083,11 +1088,11 @@ function App() {
       </section>
 
           <section className="evidence shell">
-            <div><p className="eyebrow"><span /> Built for scrutiny</p><h2>Every decision carries its limits with it.</h2></div>
+            <div><p className="eyebrow"><span /> Open to inspection</p><h2>Every recommendation shows its working.</h2></div>
             <div className="evidence-grid">
-              <Evidence icon={<ShieldCheck size={21} />} title="Evidence gates" text="A missing denominator, incompatible boundary, or unknown investment plan blocks the rank." />
-              <Evidence icon={<WalletCards size={21} />} title="No black-box allocation" text="The shortlist is a visible greedy draft. A human reviews every recommendation." />
-              <Evidence icon={<MapPin size={21} />} title="Portable by contract" text="Language, local taxonomy, currency, boundaries, and policies change through a configuration." />
+              <Evidence icon={<ShieldCheck size={21} />} title="Evidence comes first" text="If survey data or project details are missing, the system pauses the ranking instead of making up a number." />
+              <Evidence icon={<WalletCards size={21} />} title="Humans make the final call" text="The ranked list is an open draft to guide discussion. A person reviews and approves every project before any funds move." />
+              <Evidence icon={<MapPin size={21} />} title="Built for different places" text="Languages, regional needs, currencies, and policy priorities can all be adjusted to fit local guidelines." />
             </div>
           </section>
 
@@ -1115,14 +1120,14 @@ function App() {
         <div className="modal-backdrop" role="dialog" aria-modal="true">
           <div className="modal-card">
             <div className="modal-head">
-              <h3><Bot size={20} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }} /> Priority Rationale & Evidence Audit</h3>
+              <h3><Bot size={20} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }} /> Why this project is ranked first</h3>
               <button onClick={() => setShowExplainModal(false)} aria-label="Close modal"><X size={18} /></button>
             </div>
             <div className="modal-body">
               {explainLoading ? (
                 <div className="orb-box">
                   <ThinkingOrb state="connecting" size={64} />
-                  <p style={{ marginTop: '12px', color: '#567a72' }}>Analyzing evidence spans and computing policy breakdown…</p>
+                  <p style={{ marginTop: '12px', color: '#567a72' }}>Checking evidence records and calculating policy weights...</p>
                 </div>
               ) : (
                 <>
@@ -1130,7 +1135,7 @@ function App() {
                     {explainData?.rationale.summary}
                   </div>
                   <h4 style={{ margin: '14px 0 8px 0', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '.05em', color: '#16483f' }}>
-                    Evidence-Grounded Rationale
+                    How the score was calculated
                   </h4>
                   <ul className="rationale-reasons">
                     {explainData?.rationale.reasons.map((r, i) => (
@@ -1138,7 +1143,7 @@ function App() {
                     ))}
                   </ul>
                   <div className="rationale-caveats">
-                    <strong>Caveats & Planning Safeguards</strong>
+                    <strong>Things to keep in mind</strong>
                     {explainData?.rationale.caveats.map((c, i) => (
                       <div key={i} style={{ marginTop: '4px' }}>• {c}</div>
                     ))}
@@ -1155,7 +1160,7 @@ function App() {
               )}
             </div>
             <div className="modal-actions">
-              <button className="button button-primary small" onClick={() => setShowExplainModal(false)}>Close Audit</button>
+              <button className="button button-primary small" onClick={() => setShowExplainModal(false)}>Close</button>
             </div>
           </div>
         </div>
@@ -1166,12 +1171,12 @@ function App() {
         <div className="modal-backdrop" role="dialog" aria-modal="true">
           <div className="modal-card">
             <div className="modal-head">
-              <h3><ShieldCheck size={20} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }} /> Record Formal Municipal Review</h3>
+              <h3><ShieldCheck size={20} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }} /> Record official review</h3>
               <button onClick={() => setShowReviewModal(false)} aria-label="Close modal"><X size={18} /></button>
             </div>
             <div className="modal-body">
               <p>
-                Under DPG participatory planning guidelines, algorithmic rankings cannot be automatically funded without verified human operator endorsement.
+                An algorithm cannot approve municipal spending on its own. A human planner or auditor must check the numbers and endorse the list.
               </p>
 
               <div style={{ background: '#f0f6f3', border: '1px solid #d0e4da', borderRadius: '8px', padding: '10px 12px', marginBottom: '14px', fontSize: '12px' }}>
@@ -1182,7 +1187,7 @@ function App() {
               {currentUser.role === 'citizen' && (
                 <div className="citizen-gate-warning">
                   <TriangleAlert size={16} style={{ display: 'inline', verticalAlign: 'text-top', marginRight: '6px' }} />
-                  <strong>Citizen Observer Mode:</strong> Public community comments are encouraged and logged in the immutable audit trail. However, formal statutory endorsement requires Municipal Planner or Civic Auditor sign-off.
+                  <span>You are signed in as a citizen contributor. You can leave comments that will be recorded in the audit log, but official sign-off requires a municipal planner or auditor account.</span>
                   <div className="citizen-gate-actions">
                     <button
                       type="button"
@@ -1209,7 +1214,7 @@ function App() {
               )}
 
               <label style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 700, color: '#4a6f67' }}>
-                Reviewer Determination
+                Reviewer Decision
               </label>
               <div className="decision-row">
                 <button className={`decision-btn ${reviewDecision === 'reviewed' ? 'active reviewed' : ''}`} onClick={() => setReviewDecision('reviewed')}>
@@ -1220,7 +1225,7 @@ function App() {
                 </button>
               </div>
               <label style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 700, color: '#4a6f67', display: 'block', margin: '12px 0 6px' }}>
-                Verification Note
+                Review note
               </label>
               <textarea
                 className={`review-textarea ${reviewFormError ? 'input-error' : ''}`}
@@ -1243,7 +1248,7 @@ function App() {
             <div className="modal-actions">
               <button className="button button-quiet small" onClick={() => setShowReviewModal(false)}>Cancel</button>
               <button className="button button-primary small" onClick={submitReview}>
-                {currentUser.role === 'citizen' ? 'Submit Public Commentary' : 'Submit Official Endorsement'}
+                {currentUser.role === 'citizen' ? 'Submit comment' : 'Sign and endorse review'}
               </button>
             </div>
           </div>
@@ -1255,7 +1260,7 @@ function App() {
         <div className="modal-backdrop" role="dialog" aria-modal="true">
           <div className="modal-card">
             <div className="modal-head">
-              <h3><Users size={20} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }} /> Civic Roles & Authentication</h3>
+              <h3><Users size={20} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }} /> Choose role or sign in</h3>
               <button onClick={() => setShowAuthModal(false)} aria-label="Close modal"><X size={18} /></button>
             </div>
             <div className="modal-body">
@@ -1276,7 +1281,7 @@ function App() {
               {authTab === 'personas' && (
                 <div>
                   <p style={{ fontSize: '12.5px', color: '#52726b', margin: '0 0 12px 0' }}>
-                    Select a verified role persona to test different permissions, governance views, and audit sign-off workflows:
+                    Pick a demo profile to test how permissions and sign-off options change:
                   </p>
                   <div className="persona-list">
                     {demoUsers.map((persona) => {
@@ -1298,9 +1303,9 @@ function App() {
                             </h4>
                             <p><strong>{persona.organization}</strong></p>
                             <p style={{ marginTop: '3px' }}>
-                              {persona.role === 'planner' && 'Can compute allocations, analyze requests, and endorse official planning shortlist drafts.'}
-                              {persona.role === 'auditor' && 'Can verify mathematical evidence gates, check sensitivity stability, and flag runs for resurvey.'}
-                              {persona.role === 'citizen' && 'Can submit localized infrastructure needs, record voice requests, and attach public community notes.'}
+                              {persona.role === 'planner' && 'Calculates project rankings and can endorse the official shortlist.'}
+                              {persona.role === 'auditor' && 'Checks evidence records and can flag projects for resurvey.'}
+                              {persona.role === 'citizen' && 'Submits local infrastructure requests and leaves community comments.'}
                             </p>
                           </div>
                         </div>
@@ -1313,7 +1318,7 @@ function App() {
               {authTab === 'signin' && (
                 <form className="auth-form" onSubmit={handleSignIn}>
                   <p style={{ fontSize: '12.5px', color: '#52726b', margin: '0 0 10px 0' }}>
-                    Sign in with your registered civic credentials or any of the seeded demo accounts:
+                    Sign in with your email or use one of the demo accounts:
                   </p>
                   <label>
                     Email Address
@@ -1362,7 +1367,7 @@ function App() {
               {authTab === 'signup' && (
                 <form className="auth-form" onSubmit={handleSignUp}>
                   <p style={{ fontSize: '12.5px', color: '#52726b', margin: '0 0 10px 0' }}>
-                    Create a new Better-Auth profile to participate in evidence-gated planning:
+                    Create an account to participate in the planning process:
                   </p>
                   <label>
                     Full Name
@@ -1521,7 +1526,7 @@ function App() {
           )}
           <a href="https://github.com/ramnnn2006/civic-priorities" target="_blank" rel="noopener noreferrer">GitHub</a>
         </div>
-        <p>Evidence-gated civic planning engine · Open Source · Deployed on Vercel</p>
+        <p>A transparent civic planning tool. Open source on GitHub.</p>
       </footer>
     </main>
   )
@@ -1555,7 +1560,7 @@ function CandidateRow({ candidate, rank, currency }: { candidate: CandidateResul
       </div>
       <div className="score">
         <small>Score</small>
-        <strong>{candidate.score === null ? '—' : candidate.score.toFixed(1)}</strong>
+        <strong>{candidate.score === null ? 'Paused' : candidate.score.toFixed(1)}</strong>
         {candidate.score !== null && (
           <span>
             {candidate.score >= 50 ? <ArrowUp size={14} /> : <ArrowDown size={14} />}

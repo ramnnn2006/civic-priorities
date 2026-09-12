@@ -17,49 +17,49 @@ export function PrivacyPage({ onNavigate }: PageProps) {
       </button>
 
       <div className="page-header" style={{ marginBottom: '32px' }}>
-        <p className="eyebrow"><span /> Data Governance & Safeguards</p>
+        <p className="eyebrow"><span /> Privacy and data</p>
         <h1 style={{ fontSize: '38px', margin: '8px 0 16px', color: '#103631' }}>
-          Privacy Policy & Civic Data Standards
+          How we handle your information
         </h1>
         <p style={{ color: '#54726b', fontSize: '16px', lineHeight: 1.6 }}>
-          CivicPriorities operates under strict Digital Public Goods (DPG) data ethics. We transform multilingual public input into transparent planning indicators without creating surveillance vectors.
+          We built CivicPriorities to help communities decide what infrastructure needs attention first, not to collect personal data or track anyone. Here is how information moves through this tool.
         </p>
       </div>
 
       <div className="policy-card-grid" style={{ display: 'grid', gap: '20px', marginBottom: '36px' }}>
         <article className="panel" style={{ background: '#ffffff' }}>
           <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#14463e', marginBottom: '8px' }}>
-            <Lock size={18} color="#188574" /> 1. Ephemeral Client Processing
+            <Lock size={18} color="#188574" /> Everything stays in your browser session
           </h3>
           <p style={{ color: '#4d6963', fontSize: '14px', lineHeight: 1.6, margin: 0 }}>
-            Session data, draft intake requests, and policy sensitivity sliders are processed within temporary memory allocations. We do not store persistent cross-site tracking cookies, device fingerprints, or advertising identifiers.
+            When you enter requests or adjust policy sliders, those calculations happen right on your device. We do not place tracking cookies, read your device history, or share data with ad networks.
           </p>
         </article>
 
         <article className="panel" style={{ background: '#ffffff' }}>
           <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#14463e', marginBottom: '8px' }}>
-            <Eye size={18} color="#188574" /> 2. Audio & Speech Privacy
+            <Eye size={18} color="#188574" /> Voice recordings are not stored
           </h3>
           <p style={{ color: '#4d6963', fontSize: '14px', lineHeight: 1.6, margin: 0 }}>
-            Voice recordings captured through the microphone tool use standard browser Web Speech APIs. Raw audio files are never persisted on CivicPriorities servers or shared with commercial voice data brokers.
+            If you use the microphone, your browser converts speech to text locally using its standard speech features. We never save your raw voice recordings or upload them to third-party audio collectors.
           </p>
         </article>
 
         <article className="panel" style={{ background: '#ffffff' }}>
           <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#14463e', marginBottom: '8px' }}>
-            <Database size={18} color="#188574" /> 3. Non-Discrimination & Silent Areas
+            <Database size={18} color="#188574" /> Neighborhoods with less internet access are never penalized
           </h3>
           <p style={{ color: '#4d6963', fontSize: '14px', lineHeight: 1.6, margin: 0 }}>
-            Under statutory planning equity guidelines, areas with lower digital literacy or smartphone density must not be penalized. Municipal planners are ethically mandated to supplement digital submissions with verified offline survey data.
+            Not everyone has a smartphone or reliable reception. A neighborhood with fewer online requests might still need urgent water or road repairs. Planners are required to supplement digital submissions with real on-the-ground surveys.
           </p>
         </article>
 
         <article className="panel" style={{ background: '#ffffff' }}>
           <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#14463e', marginBottom: '8px' }}>
-            <FileCheck size={18} color="#188574" /> 4. Cryptographic Audit Hashes
+            <FileCheck size={18} color="#188574" /> Audit records protect identities
           </h3>
           <p style={{ color: '#4d6963', fontSize: '14px', lineHeight: 1.6, margin: 0 }}>
-            When a planning recommendation is exported, an immutable SHA-256 evidence hash is generated from aggregate metrics (counts, population denominators, and policy weights). Individual submitter identities are segregated to protect citizen privacy.
+            When a formal plan is exported, the verification hash only covers aggregate numbers such as totals, population counts, and policy weights. Personal names and contact details stay separate.
           </p>
         </article>
       </div>
@@ -67,9 +67,9 @@ export function PrivacyPage({ onNavigate }: PageProps) {
       <div style={{ background: '#eaf4ef', border: '1px solid #cce2d7', borderRadius: '12px', padding: '20px', display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
         <ShieldCheck size={24} color="#178371" style={{ flexShrink: 0, marginTop: '2px' }} />
         <div>
-          <strong style={{ color: '#113e37', display: 'block', marginBottom: '4px' }}>Open Source Verification</strong>
+          <span style={{ color: '#113e37', display: 'block', marginBottom: '4px', fontWeight: 600 }}>Open source code</span>
           <span style={{ color: '#44665f', fontSize: '13.5px', lineHeight: 1.5 }}>
-            All algorithms, server endpoints, and data contracts are public and auditable at{' '}
+            All the scoring formulas, server endpoints, and data contracts are public and viewable at{' '}
             <a href="https://github.com/ramnnn2006/civic-priorities" target="_blank" rel="noreferrer" style={{ color: '#146e5f', fontWeight: 600 }}>
               github.com/ramnnn2006/civic-priorities
             </a>.
