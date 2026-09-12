@@ -1,0 +1,128 @@
+[
+  {
+    "id": "rules",
+    "url": "https://hack2skill.com/event/codeforcommunities2",
+    "exit": 0,
+    "bytes": 10,
+    "log": "[2026-09-11 13:51:22] INFO: Fetched (200) <GET https://hack2skill.com/event/codeforcommunities2> (referer: https://www.google.com/)\n[2026-09-11 13:51:22] INFO: Content successfully saved to '/home/sparxz/Desktop/gdgcfg/planning/research/sources/rules.md'\n"
+  },
+  {
+    "id": "gdg",
+    "url": "https://gdg.community.dev/events/details/google-gdg-cloud-bhubaneswar-presents-code-for-communities-20/",
+    "exit": 0,
+    "bytes": 7711,
+    "log": "[2026-09-11 13:51:23] INFO: Fetched (200) <GET https://gdg.community.dev/events/details/google-gdg-cloud-bhubaneswar-presents-code-for-communities-20/> (referer: https://www.google.com/)\n[2026-09-11 13:51:27] INFO: Content successfully saved to '/home/sparxz/Desktop/gdgcfg/planning/research/sources/gdg.md'\n"
+  },
+  {
+    "id": "speech-languages",
+    "url": "https://cloud.google.com/speech-to-text/v2/docs/speech-to-text-supported-languages",
+    "exit": 0,
+    "bytes": 223524,
+    "log": "[2026-09-11 13:51:25] INFO: Fetched (200) <GET https://docs.cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages> (referer: https://www.google.com/)\n[2026-09-11 13:51:28] INFO: Content successfully saved to '/home/sparxz/Desktop/gdgcfg/planning/research/sources/speech-languages.md'\n"
+  },
+  {
+    "id": "speech-limits",
+    "url": "https://cloud.google.com/speech-to-text/v2/quotas",
+    "exit": 0,
+    "bytes": 18309,
+    "log": "[2026-09-11 13:51:29] INFO: Fetched (200) <GET https://docs.cloud.google.com/speech-to-text/docs/quotas> (referer: https://www.google.com/)\n[2026-09-11 13:51:29] INFO: Content successfully saved to '/home/sparxz/Desktop/gdgcfg/planning/research/sources/speech-limits.md'\n"
+  },
+  {
+    "id": "translation-languages",
+    "url": "https://cloud.google.com/translate/docs/languages",
+    "exit": 0,
+    "bytes": 26397,
+    "log": "[2026-09-11 13:51:23] INFO: Fetched (200) <GET https://docs.cloud.google.com/translate/docs/languages> (referer: https://www.google.com/)\n[2026-09-11 13:51:24] INFO: Content successfully saved to '/home/sparxz/Desktop/gdgcfg/planning/research/sources/translation-languages.md'\n"
+  },
+  {
+    "id": "translation-limits",
+    "url": "https://cloud.google.com/translate/quotas",
+    "exit": 0,
+    "bytes": 17053,
+    "log": "[2026-09-11 13:51:23] INFO: Fetched (200) <GET https://docs.cloud.google.com/translate/quotas> (referer: https://www.google.com/)\n[2026-09-11 13:51:23] INFO: Content successfully saved to '/home/sparxz/Desktop/gdgcfg/planning/research/sources/translation-limits.md'\n"
+  },
+  {
+    "id": "gemini-limits",
+    "url": "https://ai.google.dev/gemini-api/docs/rate-limits",
+    "exit": 0,
+    "bytes": 18586,
+    "log": "[2026-09-11 13:51:24] INFO: Fetched (200) <GET https://ai.google.dev/gemini-api/docs/rate-limits> (referer: https://www.google.com/)\n[2026-09-11 13:51:24] INFO: Content successfully saved to '/home/sparxz/Desktop/gdgcfg/planning/research/sources/gemini-limits.md'\n"
+  },
+  {
+    "id": "gemini-structured",
+    "url": "https://ai.google.dev/gemini-api/docs/structured-output",
+    "exit": 0,
+    "bytes": 41818,
+    "log": "[2026-09-11 13:51:24] INFO: Fetched (200) <GET https://ai.google.dev/gemini-api/docs/structured-output> (referer: https://www.google.com/)\n[2026-09-11 13:51:24] INFO: Content successfully saved to '/home/sparxz/Desktop/gdgcfg/planning/research/sources/gemini-structured.md'\n"
+  },
+  {
+    "id": "cpcb",
+    "url": "https://www.data.gov.in/resource/real-time-air-quality-index-various-locations",
+    "exit": 0,
+    "bytes": 8219,
+    "log": "[2026-09-11 13:51:22] INFO: Fetched (200) <GET https://www.data.gov.in/resource/real-time-air-quality-index-various-locations> (referer: https://www.google.com/)\n[2026-09-11 13:51:22] INFO: Content successfully saved to '/home/sparxz/Desktop/gdgcfg/planning/research/sources/cpcb.md'\n"
+  },
+  {
+    "id": "agmarknet",
+    "url": "https://www.data.gov.in/resource/current-daily-price-various-commodities-various-markets-mandi",
+    "exit": 0,
+    "bytes": 8240,
+    "log": "[2026-09-11 13:51:22] INFO: Fetched (200) <GET https://www.data.gov.in/resource/current-daily-price-various-commodities-various-markets-mandi> (referer: https://www.google.com/)\n[2026-09-11 13:51:22] INFO: Content successfully saved to '/home/sparxz/Desktop/gdgcfg/planning/research/sources/agmarknet.md'\n"
+  },
+  {
+    "id": "bhuvan",
+    "url": "https://bhuvan.nrsc.gov.in/home/index.php",
+    "exit": 0,
+    "bytes": 4927,
+    "log": "[2026-09-11 13:51:24] INFO: Fetched (200) <GET https://bhuvan.nrsc.gov.in/home/index.php> (referer: https://www.google.com/)\n[2026-09-11 13:51:28] INFO: Content successfully saved to '/home/sparxz/Desktop/gdgcfg/planning/research/sources/bhuvan.md'\n"
+  },
+  {
+    "id": "imd",
+    "url": "https://mausam.imd.gov.in/imd_latest/contents/api.pdf",
+    "exit": 0,
+    "bytes": 113,
+    "log": "[2026-09-11 13:51:24] INFO: Fetched (404) <GET https://mausam.imd.gov.in/imd_latest/contents/api.pdf> (referer: https://www.google.com/)\n[2026-09-11 13:51:24] INFO: Content successfully saved to '/home/sparxz/Desktop/gdgcfg/planning/research/sources/imd.md'\n"
+  },
+  {
+    "id": "who",
+    "url": "https://ghoapi.azureedge.net/api/WHOSIS_000001?$filter=SpatialDim%20eq%20%27IND%27&$top=2",
+    "exit": 0,
+    "bytes": 1293,
+    "log": "[2026-09-11 13:51:25] INFO: Fetched (200) <GET https://ghoapi.azureedge.net/api/WHOSIS_000001?$filter=SpatialDim%20eq%20%27IND%27&$top=2> (referer: https://www.google.com/)\n[2026-09-11 13:51:25] INFO: Content successfully saved to '/home/sparxz/Desktop/gdgcfg/planning/research/sources/who.md'\n"
+  },
+  {
+    "id": "br-health",
+    "url": "https://apidadosabertos.saude.gov.br/v1/cnes/estabelecimentos?limit=2&offset=0",
+    "exit": 0,
+    "bytes": 156,
+    "log": "[2026-09-11 13:51:26] INFO: Fetched (404) <GET https://apidadosabertos.saude.gov.br/v1/cnes/estabelecimentos?limit=2&offset=0> (referer: https://www.google.com/)\n[2026-09-11 13:51:26] INFO: Content successfully saved to '/home/sparxz/Desktop/gdgcfg/planning/research/sources/br-health.md'\n"
+  },
+  {
+    "id": "br-civic",
+    "url": "https://dados.recife.pe.gov.br/api/3/action/package_search?q=ouvidoria&rows=1",
+    "exit": 1,
+    "bytes": 0,
+    "log": "d, **kwargs)\n    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/sparxz/.local/share/scrapling-venv/lib/python3.14/site-packages/scrapling/cli.py\", line 60, in __Request_and_Save\n    response = fetcher_func(url, **kwargs)\n  File \"/home/sparxz/.local/share/scrapling-venv/lib/python3.14/site-packages/scrapling/fetchers/requests.py\", line 33, in get\n    return __FetcherClientInstance__.get(url, **_merge_selector_config(cls, kwargs))\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/sparxz/.local/share/scrapling-venv/lib/python3.14/site-packages/scrapling/engines/static.py\", line 309, in get\n    return self._make_request(\"GET\", stealth=stealthy_headers, url=url, **kwargs)\n           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/sparxz/.local/share/scrapling-venv/lib/python3.14/site-packages/scrapling/engines/static.py\", line 257, in _make_request\n    response = session.request(method, **request_args)\n  File \"/home/sparxz/.local/share/scrapling-venv/lib/python3.14/site-packages/curl_cffi/requests/session.py\", line 900, in request\n    return self._request_once(\n           ~~~~~~~~~~~~~~~~~~^\n        method=method,\n        ^^^^^^^^^^^^^^\n    ...<34 lines>...\n        discard_cookies=discard_cookies,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/home/sparxz/.local/share/scrapling-venv/lib/python3.14/site-packages/curl_cffi/requests/session.py\", line 834, in _request_once\n    raise error(str(e), e.code, rsp) from e\ncurl_cffi.requests.exceptions.SSLError: Failed to perform, curl: (35) Recv failure: Connection reset by peer. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.\n"
+  },
+  {
+    "id": "br-agri",
+    "url": "https://servicodados.ibge.gov.br/api/v3/agregados/5457/periodos/2023/variaveis/214?localidades=N1[all]&classificacao=782[40124]",
+    "exit": 0,
+    "bytes": 334,
+    "log": "[2026-09-11 13:51:27] INFO: Fetched (200) <GET https://servicodados.ibge.gov.br/api/v3/agregados/5457/periodos/2023/variaveis/214?localidades=N1[all]&classificacao=782[40124]> (referer: https://www.google.com/)\n[2026-09-11 13:51:27] INFO: Content successfully saved to '/home/sparxz/Desktop/gdgcfg/planning/research/sources/br-agri.md'\n"
+  },
+  {
+    "id": "br-air",
+    "url": "https://api.openaq.org/v3/locations?iso=BRA&limit=1",
+    "exit": 0,
+    "bytes": 86,
+    "log": "[2026-09-11 13:51:25] INFO: Fetched (401) <GET https://api.openaq.org/v3/locations?iso=BRA&limit=1> (referer: https://www.google.com/)\n[2026-09-11 13:51:26] INFO: Content successfully saved to '/home/sparxz/Desktop/gdgcfg/planning/research/sources/br-air.md'\n"
+  },
+  {
+    "id": "fao",
+    "url": "https://fenixservices.fao.org/faostat/api/v1/en/data/QCL?area_code=100&year=2023&item_code=15&element_code=5510",
+    "exit": 1,
+    "bytes": 0,
+    "log": "~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/sparxz/.local/share/scrapling-venv/lib/python3.14/site-packages/scrapling/cli.py\", line 60, in __Request_and_Save\n    response = fetcher_func(url, **kwargs)\n  File \"/home/sparxz/.local/share/scrapling-venv/lib/python3.14/site-packages/scrapling/fetchers/requests.py\", line 33, in get\n    return __FetcherClientInstance__.get(url, **_merge_selector_config(cls, kwargs))\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/sparxz/.local/share/scrapling-venv/lib/python3.14/site-packages/scrapling/engines/static.py\", line 309, in get\n    return self._make_request(\"GET\", stealth=stealthy_headers, url=url, **kwargs)\n           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/sparxz/.local/share/scrapling-venv/lib/python3.14/site-packages/scrapling/engines/static.py\", line 257, in _make_request\n    response = session.request(method, **request_args)\n  File \"/home/sparxz/.local/share/scrapling-venv/lib/python3.14/site-packages/curl_cffi/requests/session.py\", line 900, in request\n    return self._request_once(\n           ~~~~~~~~~~~~~~~~~~^\n        method=method,\n        ^^^^^^^^^^^^^^\n    ...<34 lines>...\n        discard_cookies=discard_cookies,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/home/sparxz/.local/share/scrapling-venv/lib/python3.14/site-packages/curl_cffi/requests/session.py\", line 834, in _request_once\n    raise error(str(e), e.code, rsp) from e\ncurl_cffi.requests.exceptions.Timeout: Failed to perform, curl: (28) Operation timed out after 18002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.\n"
+  }
+]

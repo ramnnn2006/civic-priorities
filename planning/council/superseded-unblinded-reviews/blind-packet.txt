@@ -1,0 +1,121 @@
+Response A:
+Executor verdict: PS1 CivicPriorities is feasible for 1–4 people only if the build is treated as a tight decision-support demo, not a civic data platform.
+
+**Shipping Order**
+1. Canonical Zod contracts and fixtures first: Request, Cluster, RegionDemographics, InfrastructureMetric, InvestmentPlan, ProjectCandidate.
+2. Deterministic scoring engine with missing-data abstention.
+3. Intake: text, editable voice transcript, messaging import fixture.
+4. Gemini extraction/rationale with strict schema validation and span references.
+5. UI flow for clusters, evidence joins, rankings, sensitivity, saved review.
+6. Brazil adapter last, using same endpoints and fixture shape.
+
+**Time Budget**
+For a small team: 2 days contracts/data/scoring, 2 days API/Gemini/STT fallback, 2 days UI/demo path, 1 day Brazil adapter/provenance, 1 day video/deck/hardening. Solo: cut polish, keep the core flow.
+
+**Failure Modes**
+Biggest risks: becoming JanMitra-plus, overclaiming data validity, Gemini hallucinating categories/numbers, missing region joins, weak Brazil portability, and spending too long on voice/messaging polish.
+
+**Cut Lines**
+Cut live WhatsApp, real government datasets, full auth, full maps, 3D/globe, multi-state breadth beyond two India fixtures plus one Brazil fixture. Do not cut infrastructure/investment joins, missing-data blocking, sensitivity controls, provenance, or Brazil adapter.
+
+**Acceptance Gates**
+Score target: AI 20/25, deployability 16/20, India depth 16/20, problem fit 18/20, impact 12/15. Total target: 82/100.
+
+Must pass: one live request changes a cluster; ranking uses demand plus infrastructure gap plus budget/overlap; missing data blocks ranking; Gemini rationale cites only supplied evidence; Brazil runs same flow; all synthetic data visibly labeled.
+
+Required change: make “not enough evidence to rank” a first-class demo moment.
+
+Clear recommendation: ship PS1 CivicPriorities, but anchor the demo on auditable planning recommendations, not grievance routing.
+
+Response B:
+CivicPriorities is viable for 1–4 people only as a tightly staged decision-support prototype. Its originality is not intake, routing, voice, or hotspots—JanMitra already occupies that ground. The defensible novelty is evidence-gated project prioritization, abstention, sensitivity analysis, and cross-country contracts.
+
+Use this exact score only when every gate passes:
+
+`priority = 0.40*demandRate + 0.35*infrastructureGap + 0.15*coverageConfidence + 0.10*investmentComplementarity`
+
+Each component is `[0,1]`. `demandRate = uniqueConfirmedRequesters / eligiblePopulation`; never raw submissions. Cap one requester/category/region/time-window and send probable duplicates to review. “Coverage confidence” measures channel/geographic coverage, not citizen need. Investment complementarity is high only when the proposal fills—not duplicates—a documented plan. Policy weights must be editable, versioned, and sum to 1.
+
+Required contract fields: `country`, `regionId`, `boundaryVersion`, `timeBasis`, `taxonomyVersion`, `value`, `unit`, `sourceId`, `sourceUrl`, `sourceMode`, `observedAt`, `version`, `missingReason`, `synthetic`, plus request provenance, original text, editable transcript, consent status, extraction spans, confirmation state, and pseudonymous requester key.
+
+Hard abstention gates: missing population denominator; incompatible boundary/time basis; absent infrastructure metric; unknown unit; missing investment-plan comparison; unconfirmed jurisdiction; extraction without supporting spans; or insufficient coverage disclosure. Output `BLOCKED`, never zero or an imputed rank. Demographics must not become an identity-based weighting factor.
+
+Retain the complete flow, deterministic arithmetic, Gemini extraction/rationale, reviewer sensitivity, provenance, DPG adapter design, single-container architecture, and India/Brazil identical-code switch. Cut live messaging, national-scale persistence, exhaustive deduplication, and broad language promises from the demo.
+
+Judging fit: AI 25—bounded extraction plus validated rationale; deployability 20—contracts and abstention; India 20—two genuinely different state configurations; fit 20—projects, not tickets; impact 15—auditable counterfactuals, not projected beneficiaries. BRICS portability requires one Russian, Chinese, or South African configuration manifest/schema fixture—not another flag.
+
+Recommendation: approve PS1 only after implementing the hard abstention gates and demonstrating one ranked, one sensitivity-changed, and one blocked project within four minutes.
+
+Response C:
+CivicPriorities is the right PS1 choice if it stays an investment-prioritization system, not a grievance router. Its adjacent move is a portable “planning evidence engine”: citizen demand becomes a constrained, reviewable project portfolio under explicit data uncertainty.
+
+Feasible for 1–4 people only with 3 regions total: two Indian fixtures, one Brazilian fixture; 3–4 project categories; seeded requests plus one live request. Avoid real integrations beyond one Gemini extraction call and one voice path.
+
+Scoring contract:
+
+`priority = 0.40 demand_rate + 0.30 infrastructure_gap + 0.15 underserved_population + 0.15 plan_alignment - funded_overlap_penalty`
+
+All components normalized 0–100. `demand_rate = deduplicated_confirmed_requests / covered_population * 10,000`; show raw count and coverage. Policy weights are editable assumptions, versioned with every review.
+
+Hard gates: block ranking if region/boundary version mismatches, population denominator is missing, metric unit/time basis is incomparable, or investment-plan status/budget is unknown. Gemini may extract only `{category, region_id, need, source_spans, confidence, clarification_required}`; deterministic code validates all IDs, joins, calculations, and rationale numbers.
+
+Retain voice/text/messaging-import intake, aggregation, demographics/infrastructure/investment joins, hotspots, sensitivity, human review, DPG-style contracts, and India→Brazil configuration switching. Required change: make “recommendation” a constrained candidate portfolio with funded-overlap and budget rules—this is the meaningful distinction from JanMitra.
+
+Judging fit: strong AI execution only if Gemini visibly abstains and evidence is traceable; deployability through a single-container, contract-first architecture; India depth through state-specific taxonomy/fixtures; impact through auditable tradeoffs, not outcome claims. BRICS portability means adapter portability: country taxonomy, administrative codes, language policy, units, and public-data provenance swap without endpoint changes.
+
+Recommendation: ship the narrow auditable portfolio-prioritization demo, with ranking abstention as a first-class success path.
+
+Response D:
+PS1 fits the complete brief. Feasible for 2–4 people; solo feasibility requires tiny fixtures and one reusable flow. Originality rests on auditable investment prioritization; intake and hotspots overlap JanMitra.
+
+Retain voice/text/messaging import, aggregation, demographic/infrastructure/investment joins, hotspots, policymaker project recommendations, reviewer control and India/Brazil adapters.
+
+Require these contracts and gates:
+
+- **Records:** immutable ID, country, regional code system/ID/boundary version, reference period, unit, source ID/URL (nullable for fixtures), source mode, version and missingness reason. Requests additionally need original text, locale, channel, transcript revision, confirmed jurisdiction, taxonomy version and duplicate-review status.
+- **Joins:** enforce unique region/category/period keys; aggregate investment rows before joining to prevent count multiplication. Reject incompatible boundaries, periods, units or infrastructure definitions.
+- **Scoring:** within one fixed reporting window, let \(U\) be confirmed, conservatively deduplicated requests and \(P>0\) population. Set \(D=\min(1,(1000U/P)/T_c)\), where \(T_c>0\) is a published category-specific demo threshold. Define comparable infrastructure gap \(G\in[0,1]\). Score \(100[wD+(1-w)G]\), default \(w=0.5\). Display raw counts, denominators and saturation.
+- **Eligibility:** missing required evidence blocks ranking; unknown investment status is not zero funding. Costs use integer currency units; enforce budget and funded-project overlap constraints.
+- **AI:** require exact source-span validation, clarification and structured evidence references; render numerical claims deterministically.
+
+For judging: prioritize authenticated extraction evidence (25%), deployable isolation/provenance (20%), two substantive state configurations (20%), complete planning flow (20%), and honest impact assumptions (15%).
+
+DPG design needs licensing, privacy, open schemas/export; national architecture needs partitioned aggregates. Brazil must change currency, geography, taxonomy and policy—not merely labels.
+
+**Recommendation: approve conditionally on these contracts and a four-minute end-to-end demo.**
+
+Response E:
+CivicPriorities is feasible only if treated like an air-traffic control prototype, not a miniature government. The missing question is not “can AI classify requests?” but “what prevents a persuasive ranking from becoming fake evidence?”
+
+Score it against the rubric with hard gates:
+
+- AI execution, 25: 20 if Gemini extracts bounded fields with source spans, abstains, and survives provider failure; 5 only for STT/translation. No credit for generic chat.
+- Deployability, 20: 10 for one container and isolated sessions; 5 for versioned country adapters; 5 for reproducible fixtures. Brazil proves contract portability, not BRICS deployment.
+- India depth, 20: full credit requires two Indian configurations, population denominators, infrastructure gaps, investment plans, language provenance, and boundary/time validation. Synthetic joins must be visibly synthetic.
+- Problem fit, 20: full credit only when project recommendations, budget/overlap constraints, sensitivity, and review are demonstrated. Ticket routing scores near zero.
+- Impact, 15: award mostly for accountable decision support, not claimed outcomes.
+
+Required contracts: every request, region, metric, investment, and project must carry country, code system, unit, time, version, source mode, source ID, and missingness. Ranking must abstain—not impute—when joins, denominators, boundary versions, or time bases are incompatible. Duplicate submissions cannot equal votes. AI may explain validated calculations, never perform them.
+
+Retain voice/text, editable transcripts, messaging import, demographic/infrastructure/investment joins, hotspots, policy recommendations, DPG-style open contracts, and national-scale architecture. Cut decorative 3D, broad localization, live WhatsApp, and unverified deployment language.
+
+Originality is a hypothesis: JanMitra owns intake, routing, speech, categorization, and hotspots. CivicPriorities wins only through auditable investment prioritization plus missing-data abstention and policy sensitivity.
+
+Recommendation: build the four-minute India-to-Brazil evidence-and-abstention demo, with the gates above treated as acceptance criteria.
+
+Response F:
+Reject “finalized.” This is feasible for 3–4 people; solo feasibility depends on freezing fixtures, categories and integrations immediately. Hidden costs are boundary reconciliation, duplicate adjudication, provider setup and recommendation validation.
+
+JanMitra already occupies the visible intake/hotspot story. Differentiation must be **a project changing rank—or becoming unrankable—because planning evidence changes**.
+
+Judging exposure: AI execution (25%) risks looking incidental; deployability (20%) lacks operational evidence; India depth (20%) needs substantive state differences; problem fit (20%) is strongest; impact (15%) remains hypothetical.
+
+Require:
+
+- **Exact scoring:** `D=min(1,1000×U/P/10)`, where U is deduplicated confirmed requests within 90 days, P population; `G=1−coverage`; `S=100×(0.4D+0.6G)`. Ten requests/1,000 and weights are disclosed assumptions. U measures requests, never unique citizens. Rank eligible projects; do not imply portfolio optimization.
+- **Contracts:** typed IDs, boundary/time versions, units, provenance, missingness; Request adds original text, locale, evidence spans, confirmed jurisdiction, duplicate status. Project adds template, cost, currency, funding overlap and evidence IDs.
+- **Gates:** block ranking for invalid population, missing coverage/cost/investment inventory, incompatible boundaries/timeframes or unresolved duplicates. Exclude fully funded equivalents; block uncertain overlap. Never redistribute missing weights.
+- **Retain:** all intake channels, aggregation, joins, hotspots and policymaker recommendations. DPG design requires reusable schemas, privacy controls and licensing review; national architecture requires partitioned, versioned regional joins.
+- **Demo:** one live extraction, competing projects, sensitivity, abstention, substantive second-state configuration and Brazil adapter with Portuguese taxonomy, BRL and local boundaries. Brazil demonstrates only Brazil portability.
+
+**Recommendation: proceed conditionally with this frozen scope; drop decorative work.**

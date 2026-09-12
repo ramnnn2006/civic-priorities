@@ -1,0 +1,92 @@
+Press Release Page | Press Information Bureau
+
+Ministry of Personnel, Public Grievances & Pensions
+
+![azadi ka amrit mahotsav](https://static.pib.gov.in/WriteReadData/specificdocs/photo/2026/sep/ph_9768_20260902_10000501.png)
+
+The Department of Administrative Reforms and Public Grievances released the 28th Report Centralized Public Grievance Redress and Monitoring System (CPGRAMS) for States/UTs of November, 2024
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+### 53,640PG cases were received by States/UTs in November, 2024 A total of 56,650 grievances redressed by States/UTs in November, 2024. Pendency in States/UTs stands at 1,92,012 grievances
+
+Posted On:
+18 DEC 2024 4:42PM by PIB Delhi
+
+The Department of Administrative Reforms and Public Grievances (DARPG) released the Centralized Public Grievance Redress and Monitoring System (CPGRAMS) 28th monthly report for States/UTs for November, 2024. The said report provides a detailed analysis of types and categories of public grievances and the nature of disposal by the States/UTs.
+
+A total of 56,650 grievances were redressed by the States and Union Territories in November, 2024. The pendency of grievances on the CPGRAMS portal stands at 1,92,012 grievances across the States/UTs Governments, as of 30th November, 2024.
+
+The report provides the data for new users registered on CPGRAMS through CPGRAMS Portal in the month of November, 2024. A total of 39,999 new users registered in the month of November, 2024, with maximum registrations from Uttar Pradesh (6,189) registrations.
+
+The said report also provides the state-wise analysis on the grievances registered through Common Service Centres in November, 2024. CPGRAMS has been integrated with the Common Service Centre (CSC) portal and is available at more than 5 lakh CSCs, associating with 2.5 lakh Village Level Entrepreneurs (VLEs). 6,537 grievances were registered through CSCs in the month of November, 2024, in which maximum grievances were filed from Uttar Pradesh (1,469 grievances) followed by Odisha(1,444 grievances). It also highlights the major issues/categories for which the maximum grievances were registered through CSCs.
+
+In November, 2024, the Feedback Call Centre collected 55,206feedbacks, out of the total feedbacks collected, ~44% citizens expressed satisfaction with the resolution provided to their respective grievances. In November, 2024, 22,319 feedbacks were collected for States/UTs by the Feedback Call Centre, out of the feedbacks collected, ~35% citizens expressed satisfaction with the resolution provided. The performance of States/UTs in the last 11 months, with respect to the satisfaction percentage of citizens is also present in the said report.
+
+Uttar Pradesh has received the maximum number of grievances in November, 2024 with the number standing at 20,250 grievances. 13 States/UTs have received more than 1,000 grievances in the month of November, 2024. Uttar Pradesh and Gujarat disposed the maximum number of grievances in November, 2024, with the number standing at 20,255 and 4,494 grievances respectively.
+
+The report also includes the status of grants released under the Sevottam Scheme in the FY 2022-23 and FY 2023-24. In the last three Financial Years (2022-23, 2023-24, 2024-25), 616 training courses have been completed, in which ~20,017 officers have been trained.
+
+|  |  |  |  |
+| --- | --- | --- | --- |
+| **S No.** | **Financial Year** | **Training Conducted** | **Officers Trained** |
+| 1 | 2022-23 | 280 | 8,496 |
+| 2 | 2023-24 | 236 | 8,445 |
+| 3 | 2024-25 | 100 | 3,076 |
+| **TOTAL** | | **616** | **20,017** |
+
+**Key Highlights for the month of November, 2024, are as follows:**
+
+1. **Status of Public Grievances on CPGRAMS:**
+
+* In November, 2024, 53,640PG cases were received for the States/UTs and 56,650PG cases were redressed.
+* The monthly disposal in States/UTs decreased from 74,308 PG cases at the end of October, 2024, to 56,650 PG cases at the end of November, 2024.
+
+2. **Status of Pendency of Public Grievances on CPGRAMS**
+
+* 23 States/UTs have more than 1,000 pending grievances as on 30th November, 2024.
+* For States/UTs, as on 30th November, 2024, there exists a pendency of 1,92,012 PG cases, lowest ever pendency recorded in the year 2024
+* The pendency in the States/UTs has decreased from 1,94,986 PG cases at the end of October, 2024 to 1,92,012 PG cases at the end of November, 2024
+
+**The report also features 3 success stories of effective grievance resolution from States/UTs:**
+
+1. **Grievance of Shri Anurag Kumar Pandey:** Non-receipt of benefit under Janani Suraksha Yojana
+
+Shri Anurag Kumar Pandey reported that his wife, Pratima Pandey, delivered on 04.08.2024 at the Community Health Centre, Hanumana, however, he did not receive the entitled payment under the Janani Suraksha Yojana (JSY). Upon inquiring at the hospital, he was informed that the JSY payment had been deposited in his account on 25.09.2024. Despite payment deposited claims, the amount did not reflect in the bank account statement of the account holder. Concerned, the citizen raised a grievance on the CPGRAMS portal for an effective resolution.
+
+The Government of Madhya Pradesh responded to the complainant, confirming that a payment of ₹1,400 under the Janani Suraksha Yojana had been transferred to the beneficiary's account on September 25, 2024, along with the provision of the Unique Transaction Reference. Additionally, the government informed that a payment of ₹10,600 under the Maternity Assistance Scheme was deposited into the same account on November 25, 2024. The beneficiary was notified of these payments, and the complainant expressed satisfaction. with the resolution provided.
+
+2. **Grievance of Shri Manoj Kumar Awasthi:** Unresolved billing issue with Delhi Jal Board
+
+Shri Manoj Kumar Awasthi highlighted an unresolved billing issue with the Delhi Jal Board (DJB). Despite paying ₹14,100 towards the DDA water bill and submitting the payment receipt along with the DDA NOC to the ZRO Office at Kakrola Mor multiple times, the amount continues to reflect as pending in the DJB's records. The citizen was concerned about the lack of resolution, hence, raised a grievance on the CPGRAMS Portal.
+
+The concerned authorities took cognizance of the matter and replied to the citizen stating that the DDA amount has been updated in the system. Further, current meter reading for the updated bill was requested from the complainant to share.
+
+3. **Grievance of Ms. Runali Ravindra Bhore:** Amount deducted but not reflected in MHADA account
+
+Smt. Runali made a payment of Rs. 2,545 for maintenance via the e-billing portal using UPI. Although the amount got deducted from her bank account, the same was not reflecting in her MHADA account. Concerned, she subsequently lodged a grievance on the CPGRAMS Portal, post which the Property Manager, Sion, contacted the concerned department's computer engineer and confirmed that the payment has now been updated.
+
+[Click here to see PDF.](https://static.pib.gov.in/WriteReadData/specificdocs/documents/2024/dec/doc20241218474001.pdf)
+
+\*\*\*
+
+**NKR/KS**
+
+  
+(Release ID: 2085649)
+Visitor Counter : 1108
+
+Read this release in:
+[Urdu](https://pib.gov.in/PressReleasePage.aspx?PRID=2085758) 
+,
+[हिन्दी](https://pib.gov.in/PressReleasePage.aspx?PRID=2085885) 
+,
+[Tamil](https://pib.gov.in/PressReleasePage.aspx?PRID=2085854)
+
+|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Ministry of Personnel, Public Grievances & Pensions   The Department of Administrative Reforms and Public Grievances released the 28th Report Centralized Public Grievance Redress and Monitoring System (CPGRAMS) for States/UTs of November, 2024    53,640PG cases were received by States/UTs in November, 2024    A total of 56,650 grievances redressed by States/UTs in November, 2024. Pendency in States/UTs stands at 1,92,012 grievances    Posted On: 18 DEC 2024 4:42PM by PIB Delhi    The Department of Administrative Reforms and Public Grievances (DARPG) released the Centralized Public Grievance Redress and Monitoring System (CPGRAMS) 28th monthly report for States/UTs for November, 2024. The said report provides a detailed analysis of types and categories of public grievances and the nature of disposal by the States/UTs.  A total of 56,650 grievances were redressed by the States and Union Territories in November, 2024. The pendency of grievances on the CPGRAMS portal stands at 1,92,012 grievances across the States/UTs Governments, as of 30th November, 2024.  The report provides the data for new users registered on CPGRAMS through CPGRAMS Portal in the month of November, 2024. A total of 39,999 new users registered in the month of November, 2024, with maximum registrations from Uttar Pradesh (6,189) registrations.  The said report also provides the state-wise analysis on the grievances registered through Common Service Centres in November, 2024. CPGRAMS has been integrated with the Common Service Centre (CSC) portal and is available at more than 5 lakh CSCs, associating with 2.5 lakh Village Level Entrepreneurs (VLEs). 6,537 grievances were registered through CSCs in the month of November, 2024, in which maximum grievances were filed from Uttar Pradesh (1,469 grievances) followed by Odisha(1,444 grievances). It also highlights the major issues/categories for which the maximum grievances were registered through CSCs.  In November, 2024, the Feedback Call Centre collected 55,206feedbacks, out of the total feedbacks collected, ~44% citizens expressed satisfaction with the resolution provided to their respective grievances. In November, 2024, 22,319 feedbacks were collected for States/UTs by the Feedback Call Centre, out of the feedbacks collected, ~35% citizens expressed satisfaction with the resolution provided. The performance of States/UTs in the last 11 months, with respect to the satisfaction percentage of citizens is also present in the said report.  Uttar Pradesh has received the maximum number of grievances in November, 2024 with the number standing at 20,250 grievances. 13 States/UTs have received more than 1,000 grievances in the month of November, 2024. Uttar Pradesh and Gujarat disposed the maximum number of grievances in November, 2024, with the number standing at 20,255 and 4,494 grievances respectively.  The report also includes the status of grants released under the Sevottam Scheme in the FY 2022-23 and FY 2023-24. In the last three Financial Years (2022-23, 2023-24, 2024-25), 616 training courses have been completed, in which ~20,017 officers have been trained.  |  |  |  |  | | --- | --- | --- | --- | | **S No.** | **Financial Year** | **Training Conducted** | **Officers Trained** | | 1 | 2022-23 | 280 | 8,496 | | 2 | 2023-24 | 236 | 8,445 | | 3 | 2024-25 | 100 | 3,076 | | **TOTAL** | | **616** | **20,017** |    **Key Highlights for the month of November, 2024, are as follows:**   1. **Status of Public Grievances on CPGRAMS:**  * In November, 2024, 53,640PG cases were received for the States/UTs and 56,650PG cases were redressed. * The monthly disposal in States/UTs decreased from 74,308 PG cases at the end of October, 2024, to 56,650 PG cases at the end of November, 2024.  2. **Status of Pendency of Public Grievances on CPGRAMS**  * 23 States/UTs have more than 1,000 pending grievances as on 30th November, 2024. * For States/UTs, as on 30th November, 2024, there exists a pendency of 1,92,012 PG cases, lowest ever pendency recorded in the year 2024 * The pendency in the States/UTs has decreased from 1,94,986 PG cases at the end of October, 2024 to 1,92,012 PG cases at the end of November, 2024     **The report also features 3 success stories of effective grievance resolution from States/UTs:**     1. **Grievance of Shri Anurag Kumar Pandey:** Non-receipt of benefit under Janani Suraksha Yojana   Shri Anurag Kumar Pandey reported that his wife, Pratima Pandey, delivered on 04.08.2024 at the Community Health Centre, Hanumana, however, he did not receive the entitled payment under the Janani Suraksha Yojana (JSY). Upon inquiring at the hospital, he was informed that the JSY payment had been deposited in his account on 25.09.2024. Despite payment deposited claims, the amount did not reflect in the bank account statement of the account holder. Concerned, the citizen raised a grievance on the CPGRAMS portal for an effective resolution.  The Government of Madhya Pradesh responded to the complainant, confirming that a payment of ₹1,400 under the Janani Suraksha Yojana had been transferred to the beneficiary's account on September 25, 2024, along with the provision of the Unique Transaction Reference. Additionally, the government informed that a payment of ₹10,600 under the Maternity Assistance Scheme was deposited into the same account on November 25, 2024. The beneficiary was notified of these payments, and the complainant expressed satisfaction. with the resolution provided.   2. **Grievance of Shri Manoj Kumar Awasthi:** Unresolved billing issue with Delhi Jal Board   Shri Manoj Kumar Awasthi highlighted an unresolved billing issue with the Delhi Jal Board (DJB). Despite paying ₹14,100 towards the DDA water bill and submitting the payment receipt along with the DDA NOC to the ZRO Office at Kakrola Mor multiple times, the amount continues to reflect as pending in the DJB's records. The citizen was concerned about the lack of resolution, hence, raised a grievance on the CPGRAMS Portal.  The concerned authorities took cognizance of the matter and replied to the citizen stating that the DDA amount has been updated in the system. Further, current meter reading for the updated bill was requested from the complainant to share.   3. **Grievance of Ms. Runali Ravindra Bhore:** Amount deducted but not reflected in MHADA account   Smt. Runali made a payment of Rs. 2,545 for maintenance via the e-billing portal using UPI. Although the amount got deducted from her bank account, the same was not reflecting in her MHADA account. Concerned, she subsequently lodged a grievance on the CPGRAMS Portal, post which the Property Manager, Sion, contacted the concerned department's computer engineer and confirmed that the payment has now been updated.  [Click here to see PDF.](https://static.pib.gov.in/WriteReadData/specificdocs/documents/2024/dec/doc20241218474001.pdf)  \*\*\*  **NKR/KS**      (Release ID: 2085649) |
+|  |
+
+[* ![Share on facebook](https://static.pib.gov.in/WriteReadData/userfiles/socialmedianew/facebook.jpg)](http://www.facebook.com/share.php?u=https://pib.gov.in/PressReleasePage.aspx?PRID=2085649)[* ![Share on twitter](https://static.pib.gov.in/WriteReadData/specificdocs/photo/2023/aug/ph2023818240601.jpg)](https://twitter.com/intent/tweet?url=https://pib.gov.in/PressReleasePage.aspx?PRID=2085649&text=The%20Department%20of%20Administrative%20Reforms%20and%20Public%20Grievances%20released%20the%2028th%20Report%20Centralized%20Public%20Grievance%20Redress%20and%20Monitoring%20System%20(CPGRAMS)%20for%20States/UTs%20of%20November,%202024)[* ![Share on whatsapp](https://static.pib.gov.in/WriteReadData/userfiles/socialmedianew/whatsapp1.png)](https://api.whatsapp.com/send?text=https://pib.gov.in/PressReleasePage.aspx?PRID=2085649)[* ![Share on email](https://static.pib.gov.in/WriteReadData/userfiles/socialmedianew/email1.png)](https://mail.google.com/mail/?view=cm&fs=1&tf=1&to=&su=The%20Department%20of%20Administrative%20Reforms%20and%20Public%20Grievances%20released%20the%2028th%20Report%20Centralized%20Public%20Grievance%20Redress%20and%20Monitoring%20System%20(CPGRAMS)%20for%20States/UTs%20of%20November,%202024&body=https://pib.gov.in/PressReleasePage.aspx?PRID=2085649&ui=2&tf=1&pli=1 "Share by Email")[* ![Share on linkedin](https://static.pib.gov.in/WriteReadData/userfiles/socialmedianew/linkedin.png)](https://www.linkedin.com/shareArticle?mini=true&url=https://pib.gov.in/PressReleasePage.aspx?PRID=2085649&title=The%20Department%20of%20Administrative%20Reforms%20and%20Public%20Grievances%20released%20the%2028th%20Report%20Centralized%20Public%20Grievance%20Redress%20and%20Monitoring%20System%20(CPGRAMS)%20for%20States/UTs%20of%20November,%202024&summary=My%20favorite%20developer%20program&source=LinkedIn)
+
+[* ![Share on facebook](https://static.pib.gov.in/WriteReadData/userfiles/socialmedianew/facebook.jpg)](http://www.facebook.com/share.php?u=https://pib.gov.in/PressReleasePage.aspx?PRID=2085649)[* ![Share on twitter](https://static.pib.gov.in/WriteReadData/specificdocs/photo/2023/aug/ph2023818240601.jpg)](https://twitter.com/intent/tweet?url=https://pib.gov.in/PressReleasePage.aspx?PRID=2085649&text=The%20Department%20of%20Administrative%20Reforms%20and%20Public%20Grievances%20released%20the%2028th%20Report%20Centralized%20Public%20Grievance%20Redress%20and%20Monitoring%20System%20(CPGRAMS)%20for%20States/UTs%20of%20November,%202024)[* ![Share on whatsapp](https://static.pib.gov.in/WriteReadData/userfiles/socialmedianew/whatsapp1.png)](https://api.whatsapp.com/send?text=https://pib.gov.in/PressReleasePage.aspx?PRID=2085649)[* ![Share on email](https://static.pib.gov.in/WriteReadData/userfiles/socialmedianew/email1.png)](https://mail.google.com/mail/?view=cm&fs=1&tf=1&to=&su=The%20Department%20of%20Administrative%20Reforms%20and%20Public%20Grievances%20released%20the%2028th%20Report%20Centralized%20Public%20Grievance%20Redress%20and%20Monitoring%20System%20(CPGRAMS)%20for%20States/UTs%20of%20November,%202024&body=https://pib.gov.in/PressReleasePage.aspx?PRID=2085649&ui=2&tf=1&pli=1 "Share by Email")[* ![Share on linkedin](https://static.pib.gov.in/WriteReadData/userfiles/socialmedianew/linkedin.png)](https://www.linkedin.com/shareArticle?mini=true&url=https://pib.gov.in/PressReleasePage.aspx?PRID=2085649&title=The%20Department%20of%20Administrative%20Reforms%20and%20Public%20Grievances%20released%20the%2028th%20Report%20Centralized%20Public%20Grievance%20Redress%20and%20Monitoring%20System%20(CPGRAMS)%20for%20States/UTs%20of%20November,%202024&summary=My%20favorite%20developer%20program&source=LinkedIn)

@@ -1,0 +1,8 @@
+{
+  "stage": "review",
+  "index": 3,
+  "requested_model": "gpt-5.6-terra",
+  "exit_code": 0,
+  "seconds": 20.38,
+  "has_response": true
+}

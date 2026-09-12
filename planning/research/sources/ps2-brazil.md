@@ -1,0 +1,1 @@
+[{"page":1,"pages":1,"per\_page":2,"total":1,"sourceid":"2","lastupdated":"2026-07-13"},[{"indicator":{"id":"EN.ATM.PM25.MC.M3","value":"PM2.5 air pollution, mean annual exposure (micrograms per cubic meter)"},"country":{"id":"BR","value":"Brazil"},"countryiso3code":"BRA","date":"2020","value":13.6658296866126,"unit":"","obs\_status":"","decimal":0}]]

@@ -1,0 +1,94 @@
+[
+  {
+    "name": "bento-grid",
+    "url": "https://magicui.design/r/bento-grid.json",
+    "status": 200,
+    "json": true,
+    "dependencies": [
+      "@radix-ui/react-icons"
+    ],
+    "files": [
+      "registry/magicui/bento-grid.tsx"
+    ]
+  },
+  {
+    "name": "globe",
+    "url": "https://magicui.design/r/globe.json",
+    "status": 200,
+    "json": true,
+    "dependencies": [
+      "cobe@^0.6.4",
+      "motion"
+    ],
+    "files": [
+      "registry/magicui/globe.tsx"
+    ]
+  },
+  {
+    "name": "blur-fade",
+    "url": "https://magicui.design/r/blur-fade.json",
+    "status": 200,
+    "json": true,
+    "dependencies": [
+      "motion"
+    ],
+    "files": [
+      "registry/magicui/blur-fade.tsx"
+    ]
+  },
+  {
+    "name": "skiper-index",
+    "url": "https://skiper-ui.com/registry.json",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "name": "skiper87-json",
+    "url": "https://skiper-ui.com/registry/skiper87.json",
+    "status": 200,
+    "json": true,
+    "dependencies": [
+      "framer-motion"
+    ],
+    "files": [
+      "/skiper87.tsx"
+    ]
+  },
+  {
+    "name": "animaster-search",
+    "url": "https://api.github.com/search/repositories?q=animaster&per_page=5",
+    "status": 200,
+    "json": true,
+    "matches": [
+      {
+        "full_name": "kontur-web-courses/animaster",
+        "pushed_at": "2024-05-01T12:17:16Z",
+        "archived": false,
+        "description": "animaster task"
+      },
+      {
+        "full_name": "Irit-Basic-JS/3-animaster",
+        "pushed_at": "2021-11-21T07:46:27Z",
+        "archived": false,
+        "description": null
+      },
+      {
+        "full_name": "IritRTF/3-animaster",
+        "pushed_at": "2023-12-28T09:14:37Z",
+        "archived": false,
+        "description": null
+      },
+      {
+        "full_name": "AniMasterOnline/AniMaster",
+        "pushed_at": "2016-03-07T14:27:41Z",
+        "archived": false,
+        "description": "AniMaster Online Web"
+      },
+      {
+        "full_name": "Vizdumb2005/Animaster",
+        "pushed_at": "2026-05-17T06:51:33Z",
+        "archived": false,
+        "description": null
+      }
+    ]
+  }
+]

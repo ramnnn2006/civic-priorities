@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "allowSyntheticDefaultImports": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  },
+  "include": ["server/**/*.ts", "api/**/*.ts", "src/data.ts", "src/engine.ts", "src/types.ts"]
+}

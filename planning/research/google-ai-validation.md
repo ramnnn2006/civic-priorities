@@ -1,0 +1,15 @@
+# Google AI validation — 2026-09-11
+All documentation below was fetched with Scrapling after an escalated retry. No authenticated API invocation was performed; documented availability is not a tested project entitlement.
+
+| Capability | Verified documentation | Demo implication |
+|---|---|---|
+| Gemini structured output | Supports a subset of JSON Schema; syntactically valid output still needs semantic validation. [Docs](https://ai.google.dev/gemini-api/docs/structured-output), local `sources/gemini-structured.md` | Use extraction/classification with schema checks, source references and abstention. Never let the model invent official categories or calculate stock arithmetic. |
+| Gemini rate limits | RPM, TPM and RPD apply per project; active limits depend on account/model/tier and are viewed in AI Studio; capacity is not guaranteed. [Docs](https://ai.google.dev/gemini-api/docs/rate-limits) | No universal free-tier RPM is asserted. Verify the chosen model in the actual project before build; queue requests and handle 429. |
+| Speech-to-Text | Synchronous: 10 MB or one minute, whichever first. Streaming: 25 KB per audio message, stream up to five minutes. [Quotas](https://cloud.google.com/speech-to-text/v2/quotas) | Record 15–30 seconds; retain editable text fallback. Quotas page redirects to current unified docs; inspect actual V2 method before implementation. |
+| Translation general model | Default 6,000,000 characters/project/minute; v3 6,000 requests/project/minute. Recommended request size 5,000 code points; Advanced maximum 30,000 code points; Basic maximum 100,000 bytes. [Quotas](https://cloud.google.com/translate/quotas) | Use short segments; these are default service quotas, not free allowances or confirmed account allocations. |
+
+[Speech language matrix](https://cloud.google.com/speech-to-text/v2/docs/speech-to-text-supported-languages), saved in `sources/speech-languages.md`, explicitly lists Hindi `hi-IN`, Tamil `ta-IN`, Bengali `bn-IN`, Gujarati `gu-IN`, Kannada `kn-IN`, Malayalam `ml-IN`, Marathi `mr-IN`, Telugu `te-IN`, Assamese `as-IN`, Punjabi `pa-Guru-IN` and Brazilian Portuguese `pt-BR` with `chirp_2` in `asia-southeast1`. This is a verified subset, not a claim of all Indian languages. Model features and regional availability differ; dialect/code-switching quality was not tested.
+
+[Translation languages](https://cloud.google.com/translate/docs/languages), local `sources/translation-languages.md`, lists NMT support for `hi`, `ta`, `bn`, `gu`, `kn`, `ml`, `mr`, `te`, `as`, `pa`, `or`, `ur`, and Portuguese including `pt-BR`. Do not conflate the NMT list with Translation LLM: the latter marks Odia experimental in the fetched table. Language support does not establish translation quality for administrative, clinical or agronomic terminology.
+
+For every PS: use explicit `country`, `input_locale`, `output_locale`, `speech_model`, `speech_region`, `translation_model`, `taxonomy_version`, and `source_ids`. Demonstrate India and Brazil configuration changes using the same normalized contract. Neither language support nor a second-country dataset proves deployability across all BRICS members.

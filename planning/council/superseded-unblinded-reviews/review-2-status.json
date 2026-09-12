@@ -1,0 +1,8 @@
+{
+  "stage": "review",
+  "index": 2,
+  "requested_model": "gpt-5.6-sol",
+  "exit_code": 0,
+  "seconds": 34.69,
+  "has_response": true
+}

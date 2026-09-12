@@ -1,0 +1,33 @@
+{
+  "name": "civic-priorities",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && tsc --noEmit -p tsconfig.server.json && vite build",
+    "preview": "vite preview",
+    "server": "RUN_SERVER=true tsx server/index.ts",
+    "start": "RUN_SERVER=true tsx server/index.ts",
+    "typecheck": "tsc -b && tsc --noEmit -p tsconfig.server.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "lucide-react": "latest",
+    "express": "latest",
+    "tsx": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@types/express": "latest",
+    "typescript": "latest",
+    "vitest": "latest",
+    "jsdom": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest"
+  }
+}
