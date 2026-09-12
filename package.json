@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && tsc --noEmit -p tsconfig.server.json && vite build",
+    "build:api": "esbuild server/vercel.ts --bundle --platform=node --target=node20 --format=esm --outfile=api/index.js --external:express --external:zod",
+    "build": "tsc -b && tsc --noEmit -p tsconfig.server.json && vite build && npm run build:api",
     "preview": "vite preview",
     "server": "RUN_SERVER=true tsx server/index.ts",
     "start": "RUN_SERVER=true tsx server/index.ts",
@@ -27,6 +28,7 @@
     "typescript": "latest",
     "vitest": "latest",
     "jsdom": "latest",
+    "esbuild": "^0.28.2",
     "@types/react": "latest",
     "@types/react-dom": "latest"
   }
