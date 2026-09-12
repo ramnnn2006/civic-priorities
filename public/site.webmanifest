@@ -1,0 +1,17 @@
+{
+  "name": "CivicPriorities",
+  "short_name": "CivicPriorities",
+  "description": "Evidence-gated civic planning engine and participatory decision-support workbench",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6f8f6",
+  "theme_color": "#143532",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

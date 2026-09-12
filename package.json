@@ -15,21 +15,23 @@
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
-    "vite": "latest",
+    "express": "latest",
+    "framer-motion": "^13.2.0",
+    "lucide-react": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "lucide-react": "latest",
-    "express": "latest",
+    "thinking-orbs": "^0.3.1",
     "tsx": "latest",
+    "vite": "latest",
     "zod": "latest"
   },
   "devDependencies": {
     "@types/express": "latest",
-    "typescript": "latest",
-    "vitest": "latest",
-    "jsdom": "latest",
-    "esbuild": "^0.28.2",
     "@types/react": "latest",
-    "@types/react-dom": "latest"
+    "@types/react-dom": "latest",
+    "esbuild": "^0.28.2",
+    "jsdom": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
   }
 }

@@ -1,13 +1,48 @@
 import { ChangeEvent, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import {
   ArrowDown, ArrowUp, BadgeCheck, Bot, ChevronDown, CircleAlert, FileUp,
-  FileText, Lightbulb, MapPin, MessageSquareText, Mic, Pause,
+  FileText, Lightbulb, MapPin, MessageSquareText, Mic,
   ShieldCheck, Sparkles, TriangleAlert, WalletCards, Droplets, X,
   CheckCircle2, Activity, Cpu, Sliders, UserCheck, LogIn, Users
 } from 'lucide-react'
+import { ThinkingOrb } from 'thinking-orbs'
 import { categoryMeta, configs } from './data'
 import { findCategory, makeDraft, scoreCandidates } from './engine'
 import type { CandidateResult, ConfigId, Draft, AuthUser, UserRole, ReviewerMetadata } from './types'
+import { PrivacyPage } from './pages/PrivacyPage'
+import { TermsPage } from './pages/TermsPage'
+import { ThankYouPage } from './pages/ThankYouPage'
+import { NotFoundPage } from './pages/NotFoundPage'
+
+interface ToastNotification {
+  id: string
+  type: 'success' | 'warning' | 'error' | 'info'
+  message: string
+  action?: { label: string; onClick: () => void }
+}
+
+const ROUTE_META: Record<string, { title: string; description: string }> = {
+  '/': {
+    title: 'CivicPriorities — Evidence, Not Guesswork',
+    description: 'Evidence-gated civic planning engine and participatory decision-support workbench.'
+  },
+  '/privacy': {
+    title: 'Privacy Policy — CivicPriorities',
+    description: 'Ephemeral client intake, non-tracking data governance, and open civic privacy standards.'
+  },
+  '/terms': {
+    title: 'Terms of Service & Model Governance — CivicPriorities',
+    description: 'Participatory civic governance, statutory audit requirements, and non-discriminatory algorithmic decision support guidelines.'
+  },
+  '/thank-you': {
+    title: 'Contribution Confirmed — CivicPriorities',
+    description: 'Your municipal infrastructure request has been confirmed and ledgered into the active 90-day planning cycle.'
+  },
+  '404': {
+    title: '404: Route Not Shortlisted — CivicPriorities',
+    description: 'The requested civic planning page or document could not be found.'
+  }
+}
 
 const DEMO_PERSONAS: AuthUser[] = [
   {
@@ -116,14 +151,70 @@ function App() {
   const [regOrg, setRegOrg] = useState('')
   const [authError, setAuthError] = useState('')
   const [authLoading, setAuthLoading] = useState(false)
-  const [toastMessage, setToastMessage] = useState<string | null>(null)
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg)
-    window.setTimeout(() => {
-      setToastMessage((current) => current === msg ? null : current)
-    }, 3200)
+  // Router state
+  const [currentPath, setCurrentPath] = useState<string>(() => window.location.pathname || '/')
+  const [lastConfirmedDraft, setLastConfirmedDraft] = useState<{
+    id: string
+    category: string
+    regionLabel: string
+    text: string
+    authorName?: string
+    authorRole?: string
+  } | null>(null)
+
+  // Autonomic / async loading states
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [isComputingPlan, setIsComputingPlan] = useState(false)
+
+  // Form field validation states
+  const [intakeError, setIntakeError] = useState('')
+  const [signInError, setSignInError] = useState('')
+  const [signUpErrors, setSignUpErrors] = useState<{ name?: string; email?: string; password?: string }>({})
+  const [reviewFormError, setReviewFormError] = useState('')
+
+  // Multi-toast system
+  const [toasts, setToasts] = useState<ToastNotification[]>([])
+
+  const addToast = (
+    message: string,
+    type: 'success' | 'warning' | 'error' | 'info' = 'success',
+    action?: { label: string; onClick: () => void }
+  ) => {
+    const id = crypto.randomUUID()
+    setToasts((prev) => [...prev.slice(-2), { id, type, message, action }])
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id))
+    }, 4500)
   }
+
+  const dismissToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id))
+  }
+
+  const navigate = (path: string) => {
+    window.history.pushState({}, '', path)
+    setCurrentPath(path)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  useEffect(() => {
+    const onPop = () => setCurrentPath(window.location.pathname || '/')
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
+
+  // Dynamic meta title and description per page
+  useEffect(() => {
+    const meta = ROUTE_META[currentPath] ?? ROUTE_META['404']
+    document.title = meta.title
+    const descTag = document.querySelector('meta[name="description"]')
+    if (descTag) descTag.setAttribute('content', meta.description)
+    const ogTitle = document.querySelector('meta[property="og:title"]')
+    if (ogTitle) ogTitle.setAttribute('content', meta.title)
+    const ogDesc = document.querySelector('meta[property="og:description"]')
+    if (ogDesc) ogDesc.setAttribute('content', meta.description)
+  }, [currentPath])
 
   const inputRef = useRef<HTMLInputElement>(null)
   const config = configs.find((item) => item.id === configId)!
@@ -237,15 +328,20 @@ function App() {
   }, [apiMode, config.id, config.regions, drafts, sessionId])
 
   async function analyzeText(text: string, channel: Draft['channel']) {
+    setIntakeError('')
     if (findCategory(text) !== selected.category) {
-      window.alert(`This request matches ${categoryMeta[findCategory(text)].label}, but ${selected.label} is configured for ${categoryMeta[selected.category].label}. Choose a compatible planning region first.`)
+      const msg = `This request matches ${categoryMeta[findCategory(text)].label}, but ${selected.label} is configured for ${categoryMeta[selected.category].label}. Choose a compatible planning region first.`
+      setIntakeError(msg)
+      addToast(msg, 'warning')
       return
     }
+    setIsAnalyzing(true)
     const local = () => {
       setApiMode('offline')
       const d = makeDraft(text, selectedRegion, config.locale, channel)
       d.author = { name: currentUser.name, role: currentUser.role, organization: currentUser.organization }
       setDraft(d)
+      setIsAnalyzing(false)
     }
     try {
       const response = await fetch('/api/v1/intake/analyze', {
@@ -258,10 +354,16 @@ function App() {
       setApiMode('server')
       setDraft(result.draft)
     } catch { local() }
+    finally { setIsAnalyzing(false) }
   }
 
   function analyze(channel: Draft['channel'] = 'text') {
-    if (!message.trim()) return
+    if (!message.trim()) {
+      setIntakeError('Please describe a local infrastructure need before analyzing.')
+      addToast('Please enter an infrastructure request first', 'warning')
+      return
+    }
+    setIntakeError('')
     void analyzeText(message.trim(), channel)
     setRunSaved(false)
   }
@@ -280,7 +382,19 @@ function App() {
       setDrafts((items) => [...items, confirmed])
     }
     const regionName = config.regions.find((r) => r.id === draft.regionId)?.label ?? 'selected region'
-    showToast(`Request confirmed for ${regionName} by ${currentUser.name}`)
+    setLastConfirmedDraft({
+      id: draft.id,
+      category: categoryMeta[draft.category].label,
+      regionLabel: regionName,
+      text: draft.text,
+      authorName: currentUser.name,
+      authorRole: currentUser.role
+    })
+    addToast(
+      `Request confirmed for ${regionName} by ${currentUser.name}`,
+      'success',
+      { label: 'View Receipt', onClick: () => navigate('/thank-you') }
+    )
     setDraft(importQueue[0] ?? null)
     setImportQueue((items) => items.slice(1))
     setMessage('')
@@ -289,7 +403,12 @@ function App() {
 
   async function queueImport(records: string[]) {
     const compatible = records.filter((text) => findCategory(text) === selected.category)
-    if (!compatible.length) { window.alert('No messages match the selected planning region/category.'); return }
+    if (!compatible.length) {
+      const msg = 'No imported messages match the selected planning region/category.'
+      setIntakeError(msg)
+      addToast(msg, 'error')
+      return
+    }
     const localDrafts = compatible.map((text) => makeDraft(text, selectedRegion, config.locale, 'message_import'))
     try {
       const response = await fetch('/api/v1/intake/import', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId, configId: config.id, regionId: selectedRegion, records: compatible.map((text) => ({ text })) }) })
@@ -298,11 +417,13 @@ function App() {
       setApiMode('server')
       setDraft(result.drafts[0] ?? null)
       setImportQueue(result.drafts.slice(1))
-      if (result.errors.length) window.alert(`${result.errors.length} imported messages need a different region/category and were not staged.`)
+      addToast(`Imported ${compatible.length} records into the intake queue`, 'success')
+      if (result.errors.length) addToast(`${result.errors.length} messages require different regions and were skipped.`, 'warning')
     } catch {
       setApiMode('offline')
       setDraft(localDrafts[0] ?? null)
       setImportQueue(localDrafts.slice(1))
+      addToast(`Imported ${compatible.length} records into local queue`, 'info')
     }
     setRunSaved(false)
   }
@@ -415,12 +536,19 @@ function App() {
     setCurrentUser(persona)
     localStorage.setItem('civic_user', JSON.stringify(persona))
     setShowAuthModal(false)
-    showToast(`Switched persona to ${persona.name} (${persona.role})`)
+    addToast(`Switched persona to ${persona.name} (${persona.role})`, 'info')
   }
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     setAuthError('')
+    setSignInError('')
+    if (!loginEmail.trim() || !loginPassword.trim()) {
+      const msg = 'Please enter both email and password.'
+      setSignInError(msg)
+      setAuthError(msg)
+      return
+    }
     setAuthLoading(true)
     try {
       const res = await fetch('/api/auth/sign-in/email', {
@@ -429,15 +557,18 @@ function App() {
         body: JSON.stringify({ email: loginEmail, password: loginPassword })
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Failed to sign in')
+      if (!res.ok) throw new Error(data.error || 'Invalid email or password')
       setCurrentUser(data.user)
       setAuthToken(data.token)
       localStorage.setItem('civic_user', JSON.stringify(data.user))
       localStorage.setItem('civic_token', data.token)
       setShowAuthModal(false)
-      showToast(`Welcome back, ${data.user.name}`)
+      addToast(`Signed in as ${data.user.name} (${data.user.role})`, 'success')
     } catch (err: unknown) {
-      setAuthError((err as Error).message || 'Sign in failed')
+      const msg = (err as Error).message || 'Sign in failed'
+      setAuthError(msg)
+      setSignInError(msg)
+      addToast(msg, 'error')
     } finally {
       setAuthLoading(false)
     }
@@ -446,6 +577,16 @@ function App() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     setAuthError('')
+    const errors: { name?: string; email?: string; password?: string } = {}
+    if (!regName.trim()) errors.name = 'Full name is required'
+    if (!regEmail.trim() || !regEmail.includes('@')) errors.email = 'Valid email address is required'
+    if (regPassword.length < 6) errors.password = 'Password must be at least 6 characters'
+
+    if (Object.keys(errors).length) {
+      setSignUpErrors(errors)
+      return
+    }
+    setSignUpErrors({})
     setAuthLoading(true)
     try {
       const res = await fetch('/api/auth/sign-up/email', {
@@ -466,9 +607,11 @@ function App() {
       localStorage.setItem('civic_user', JSON.stringify(data.user))
       localStorage.setItem('civic_token', data.token)
       setShowAuthModal(false)
-      showToast(`Account registered: welcome ${data.user.name}`)
+      addToast(`Account registered for ${data.user.name}`, 'success')
     } catch (err: unknown) {
-      setAuthError((err as Error).message || 'Registration failed')
+      const msg = (err as Error).message || 'Registration failed'
+      setAuthError(msg)
+      addToast(msg, 'error')
     } finally {
       setAuthLoading(false)
     }
@@ -489,10 +632,15 @@ function App() {
     setCurrentUser(fallback)
     localStorage.setItem('civic_user', JSON.stringify(fallback))
     setShowAuthModal(false)
-    showToast('Signed out. Reset to default demo persona.')
+    addToast('Signed out. Reverted to default demo persona.', 'info')
   }
 
   async function submitReview() {
+    if (!reviewNote.trim()) {
+      setReviewFormError('Please enter a verification note before submitting.')
+      return
+    }
+    setReviewFormError('')
     const reviewer: ReviewerMetadata = {
       id: currentUser.id,
       name: currentUser.name,
@@ -529,7 +677,7 @@ function App() {
           })
           setRunSaved(true)
           setShowReviewModal(false)
-          showToast(`Review signed & endorsed by ${currentUser.name}`)
+          addToast(`Review signed & endorsed by ${currentUser.name}`, 'success')
           return
         }
       } catch {
@@ -547,7 +695,7 @@ function App() {
     setPlanRevision((prev) => prev + 1)
     setRunSaved(true)
     setShowReviewModal(false)
-    showToast(`Review signed & recorded by ${currentUser.name}`)
+    addToast(`Review signed & recorded by ${currentUser.name}`, 'success')
   }
 
   const exportAuditMemorandum = async () => {
@@ -570,7 +718,7 @@ function App() {
     ]
     await navigator.clipboard.writeText(lines.join('\n'))
     setCopiedMemo(true)
-    showToast('Audit memorandum copied to clipboard')
+    addToast('Audit memorandum copied to clipboard', 'info')
     window.setTimeout(() => setCopiedMemo(false), 2000)
   }
 
@@ -596,8 +744,16 @@ function App() {
     <main>
       <div className="ambient ambient-one" /><div className="ambient ambient-two" />
       <header className="site-header shell">
-        <a className="brand" href="#top" aria-label="CivicPriorities home"><span className="brand-mark"><Sparkles size={16} /></span><span>Civic<span>Priorities</span></span></a>
+        <a className="brand" href="/" onClick={(e) => { e.preventDefault(); navigate('/') }} aria-label="CivicPriorities home">
+          <span className="brand-mark"><Sparkles size={16} /></span>
+          <span>Civic<span>Priorities</span></span>
+        </a>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <nav className="nav-links">
+            <a href="/" onClick={(e) => { e.preventDefault(); navigate('/') }} className={currentPath === '/' ? 'active' : ''}>Workbench</a>
+            <a href="/privacy" onClick={(e) => { e.preventDefault(); navigate('/privacy') }} className={currentPath === '/privacy' ? 'active' : ''}>Privacy</a>
+            <a href="/terms" onClick={(e) => { e.preventDefault(); navigate('/terms') }} className={currentPath === '/terms' ? 'active' : ''}>Terms</a>
+          </nav>
           <button className="user-badge-btn" onClick={() => setShowAuthModal(true)} title="Switch persona or sign in" type="button">
             <span className={`user-avatar ${currentUser.role}`}>
               {currentUser.name.charAt(0)}
@@ -615,7 +771,16 @@ function App() {
         </div>
       </header>
 
-      <section className="hero shell" id="top">
+      {currentPath === '/privacy' && <PrivacyPage onNavigate={navigate} />}
+      {currentPath === '/terms' && <TermsPage onNavigate={navigate} />}
+      {currentPath === '/thank-you' && <ThankYouPage onNavigate={navigate} lastConfirmed={lastConfirmedDraft} />}
+      {currentPath !== '/' && currentPath !== '/privacy' && currentPath !== '/terms' && currentPath !== '/thank-you' && (
+        <NotFoundPage onNavigate={navigate} />
+      )}
+
+      {currentPath === '/' && (
+        <>
+          <section className="hero shell" id="top">
         <div className="hero-copy">
           <p className="eyebrow"><span /> Evidence-gated civic planning</p>
           <h1>Make public priorities <em>explainable.</em></h1>
@@ -728,14 +893,47 @@ function App() {
               </div>
             </div>
             <label className="message-label" htmlFor="request">Development request</label>
-            <textarea id="request" value={message} onChange={(e) => setMessage(e.target.value)} maxLength={5000} placeholder="Describe a local infrastructure need…" />
+            <textarea
+              id="request"
+              className={intakeError ? 'input-error' : ''}
+              value={message}
+              onChange={(e) => { setMessage(e.target.value); if (intakeError) setIntakeError('') }}
+              maxLength={5000}
+              placeholder="Describe a local infrastructure need…"
+            />
+            {intakeError && (
+              <div className="field-error">
+                <CircleAlert size={14} /> {intakeError}
+              </div>
+            )}
             <div className="input-actions">
               <span>{message.length}/5,000</span>
               <div>
                 <input ref={inputRef} type="file" accept="application/json" onChange={handleImport} hidden />
                 <button className="icon-button" onClick={() => inputRef.current?.click()} title="Import JSON messages" aria-label="Import JSON messages"><FileUp size={18} /></button>
-                <button className={isListening ? 'icon-button listening' : 'icon-button'} onClick={toggleVoice} title="Use voice input" aria-label="Use voice input">{isListening ? <Pause size={18} /> : <Mic size={18} />}</button>
-                <button className="button button-primary small" onClick={() => analyze()} disabled={!message.trim()}><Sparkles size={16} /> Analyze</button>
+                <button
+                  className={isListening ? 'icon-button listening' : 'icon-button'}
+                  onClick={toggleVoice}
+                  title="Use voice input"
+                  aria-label="Use voice input"
+                >
+                  {isListening ? <ThinkingOrb state="listening" size={20} /> : <Mic size={18} />}
+                </button>
+                <button
+                  className="button button-primary small"
+                  onClick={() => analyze()}
+                  disabled={!message.trim() || isAnalyzing}
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <ThinkingOrb state="searching" size={20} /> Analyzing…
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={16} /> Analyze
+                    </>
+                  )}
+                </button>
               </div>
             </div>
             {draft && (
@@ -793,11 +991,14 @@ function App() {
           <div className="copilot-strip">
             <div className="copilot-header">
               <h3><Bot size={22} /> Civic Planning Agentic Co-Pilot</h3>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <button className="button button-quiet" style={{ color: '#fff', borderColor: '#35756a', minHeight: '32px', fontSize: '12px' }} onClick={exportAuditMemorandum}>
                   <FileText size={14} /> {copiedMemo ? 'Copied Memorandum' : 'Export Audit Memo'}
                 </button>
-                <span className="copilot-badge">Policy Auditor Active</span>
+                <span className="copilot-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <span className="orb-inline"><ThinkingOrb state="breathing" size={20} /></span>
+                  Policy Auditor Active
+                </span>
               </div>
             </div>
             <p style={{ color: '#bfe0d5', fontSize: '13px', margin: '0 0 10px 0' }}>
@@ -881,6 +1082,34 @@ function App() {
         </section>
       </section>
 
+          <section className="evidence shell">
+            <div><p className="eyebrow"><span /> Built for scrutiny</p><h2>Every decision carries its limits with it.</h2></div>
+            <div className="evidence-grid">
+              <Evidence icon={<ShieldCheck size={21} />} title="Evidence gates" text="A missing denominator, incompatible boundary, or unknown investment plan blocks the rank." />
+              <Evidence icon={<WalletCards size={21} />} title="No black-box allocation" text="The shortlist is a visible greedy draft. A human reviews every recommendation." />
+              <Evidence icon={<MapPin size={21} />} title="Portable by contract" text="Language, local taxonomy, currency, boundaries, and policies change through a configuration." />
+            </div>
+          </section>
+
+          {top && (
+            <aside className="sticky-mobile-cta" aria-label="Top priority summary">
+              <div className="sticky-cta-info">
+                <span className="sticky-cta-label">Top Priority Candidate</span>
+                <span className="sticky-cta-project">{top.project}</span>
+              </div>
+              <div className="sticky-cta-actions">
+                <button className="button button-quiet small" onClick={openExplain} type="button">
+                  <Bot size={14} /> Explain
+                </button>
+                <a className="button button-primary small" href="#workspace">
+                  Workbench
+                </a>
+              </div>
+            </aside>
+          )}
+        </>
+      )}
+
       {/* Explanation Modal */}
       {showExplainModal && (
         <div className="modal-backdrop" role="dialog" aria-modal="true">
@@ -891,7 +1120,10 @@ function App() {
             </div>
             <div className="modal-body">
               {explainLoading ? (
-                <p>Analyzing evidence spans and computing policy breakdown…</p>
+                <div className="orb-box">
+                  <ThinkingOrb state="connecting" size={64} />
+                  <p style={{ marginTop: '12px', color: '#567a72' }}>Analyzing evidence spans and computing policy breakdown…</p>
+                </div>
               ) : (
                 <>
                   <div className="rationale-summary">
@@ -990,7 +1222,20 @@ function App() {
               <label style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 700, color: '#4a6f67', display: 'block', margin: '12px 0 6px' }}>
                 Verification Note
               </label>
-              <textarea className="review-textarea" value={reviewNote} onChange={(e) => setReviewNote(e.target.value)} maxLength={1000} />
+              <textarea
+                className={`review-textarea ${reviewFormError ? 'input-error' : ''}`}
+                value={reviewNote}
+                onChange={(e) => {
+                  setReviewNote(e.target.value)
+                  if (reviewFormError) setReviewFormError('')
+                }}
+                maxLength={1000}
+              />
+              {reviewFormError && (
+                <div className="field-error" style={{ marginTop: '6px' }}>
+                  <CircleAlert size={14} /> {reviewFormError}
+                </div>
+              )}
               <div style={{ fontSize: '11px', color: '#68857f', marginTop: '8px' }}>
                 Expected Revision: <strong>#{planRevision}</strong> · Immutable Plan ID: <code>{planId ? planId.slice(0, 8) + '…' : 'local-draft'}</code>
               </div>
@@ -1075,18 +1320,33 @@ function App() {
                     <input
                       type="email"
                       required
+                      className={signInError ? 'input-error' : ''}
                       value={loginEmail}
-                      onChange={(e) => setLoginEmail(e.target.value)}
+                      onChange={(e) => {
+                        setLoginEmail(e.target.value)
+                        if (signInError) setSignInError('')
+                        if (authError) setAuthError('')
+                      }}
                       placeholder="e.g. maya.sundaram@chennaicivic.gov.in"
                     />
                   </label>
+                  {signInError && (
+                    <div className="field-error" style={{ marginTop: '4px' }}>
+                      <CircleAlert size={12} /> {signInError}
+                    </div>
+                  )}
                   <label>
                     Password
                     <input
                       type="password"
                       required
+                      className={signInError ? 'input-error' : ''}
                       value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
+                      onChange={(e) => {
+                        setLoginPassword(e.target.value)
+                        if (signInError) setSignInError('')
+                        if (authError) setAuthError('')
+                      }}
                       placeholder="Password"
                     />
                   </label>
@@ -1109,20 +1369,38 @@ function App() {
                     <input
                       type="text"
                       required
+                      className={signUpErrors.name ? 'input-error' : ''}
                       value={regName}
-                      onChange={(e) => setRegName(e.target.value)}
+                      onChange={(e) => {
+                        setRegName(e.target.value)
+                        setSignUpErrors((prev) => ({ ...prev, name: undefined }))
+                      }}
                       placeholder="e.g. Anand Kumar"
                     />
+                    {signUpErrors.name && (
+                      <div className="field-error" style={{ marginTop: '4px' }}>
+                        <CircleAlert size={12} /> {signUpErrors.name}
+                      </div>
+                    )}
                   </label>
                   <label>
                     Email
                     <input
                       type="email"
                       required
+                      className={signUpErrors.email ? 'input-error' : ''}
                       value={regEmail}
-                      onChange={(e) => setRegEmail(e.target.value)}
+                      onChange={(e) => {
+                        setRegEmail(e.target.value)
+                        setSignUpErrors((prev) => ({ ...prev, email: undefined }))
+                      }}
                       placeholder="anand@example.org"
                     />
+                    {signUpErrors.email && (
+                      <div className="field-error" style={{ marginTop: '4px' }}>
+                        <CircleAlert size={12} /> {signUpErrors.email}
+                      </div>
+                    )}
                   </label>
                   <label>
                     Password
@@ -1130,10 +1408,19 @@ function App() {
                       type="password"
                       required
                       minLength={6}
+                      className={signUpErrors.password ? 'input-error' : ''}
                       value={regPassword}
-                      onChange={(e) => setRegPassword(e.target.value)}
+                      onChange={(e) => {
+                        setRegPassword(e.target.value)
+                        setSignUpErrors((prev) => ({ ...prev, password: undefined }))
+                      }}
                       placeholder="At least 6 characters"
                     />
+                    {signUpErrors.password && (
+                      <div className="field-error" style={{ marginTop: '4px' }}>
+                        <CircleAlert size={12} /> {signUpErrors.password}
+                      </div>
+                    )}
                   </label>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                     <label>
@@ -1181,27 +1468,59 @@ function App() {
         </div>
       )}
 
-      {/* Floating Toast Notification */}
-      {toastMessage && (
-        <div className="toast-container">
-          <div className="toast-message">
-            <CheckCircle2 size={16} style={{ color: '#5ee6b3' }} />
-            <span>{toastMessage}</span>
-          </div>
+      {/* Multi-Toast Notification Stack */}
+      {toasts.length > 0 && (
+        <div className="toast-stack" role="status" aria-live="polite">
+          {toasts.map((toast) => (
+            <div key={toast.id} className={`toast-item ${toast.type}`}>
+              <div className="toast-icon">
+                {toast.type === 'success' && <CheckCircle2 size={16} />}
+                {toast.type === 'warning' && <TriangleAlert size={16} />}
+                {toast.type === 'error' && <CircleAlert size={16} />}
+                {toast.type === 'info' && <Sparkles size={16} />}
+              </div>
+              <div className="toast-body">
+                <p className="toast-msg">{toast.message}</p>
+                {toast.action && (
+                  <button
+                    type="button"
+                    className="toast-action"
+                    onClick={() => {
+                      toast.action?.onClick()
+                      dismissToast(toast.id)
+                    }}
+                  >
+                    {toast.action.label}
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                className="toast-close"
+                onClick={() => dismissToast(toast.id)}
+                aria-label="Dismiss notification"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ))}
         </div>
       )}
 
-      <section className="evidence shell">
-        <div><p className="eyebrow"><span /> Built for scrutiny</p><h2>Every decision carries its limits with it.</h2></div>
-        <div className="evidence-grid">
-          <Evidence icon={<ShieldCheck size={21} />} title="Evidence gates" text="A missing denominator, incompatible boundary, or unknown investment plan blocks the rank." />
-          <Evidence icon={<WalletCards size={21} />} title="No black-box allocation" text="The shortlist is a visible greedy draft. A human reviews every recommendation." />
-          <Evidence icon={<MapPin size={21} />} title="Portable by contract" text="Language, local taxonomy, currency, boundaries, and policies change through a configuration." />
-        </div>
-      </section>
-
       <footer className="shell">
-        <div className="brand"><span className="brand-mark"><Sparkles size={16} /></span><span>Civic<span>Priorities</span></span></div>
+        <div className="brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }} role="button" tabIndex={0} aria-label="CivicPriorities home">
+          <span className="brand-mark"><Sparkles size={16} /></span>
+          <span>Civic<span>Priorities</span></span>
+        </div>
+        <div className="footer-links">
+          <a href="/" onClick={(e) => { e.preventDefault(); navigate('/') }}>Workbench</a>
+          <a href="/privacy" onClick={(e) => { e.preventDefault(); navigate('/privacy') }}>Privacy Policy</a>
+          <a href="/terms" onClick={(e) => { e.preventDefault(); navigate('/terms') }}>Terms of Service</a>
+          {lastConfirmedDraft && (
+            <a href="/thank-you" onClick={(e) => { e.preventDefault(); navigate('/thank-you') }}>Recent Receipt</a>
+          )}
+          <a href="https://github.com/ramnnn2006/civic-priorities" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </div>
         <p>Evidence-gated civic planning engine · Open Source · Deployed on Vercel</p>
       </footer>
     </main>
