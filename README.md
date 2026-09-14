@@ -12,11 +12,20 @@
 - **Deterministic Category-Scoped Scoring:** Transparent formula:
   $$S = 100 \times [w \cdot D + (1 - w) \cdot G]$$
   where $D$ is the normalized community demand rate per 1,000 residents and $G$ is the verified infrastructure deficit.
-- **DPG Evidence Blocking Rule:** A missing investment plan or demographic denominator strictly **blocks** ranking instead of quietly defaulting to zero—preventing neglected regions from being penalized for absent paperwork.
+- **DPG Evidence Blocking Rule:** A missing investment plan or demographic denominator strictly **blocks** ranking instead of quietly defaulting to zero, preventing neglected regions from being penalized for absent paperwork.
 - **Agentic Civic Auditor Co-Pilot:** Interactive policy sensitivity simulation detecting rank inversions between demand-first ($w=0.8$) and gap-first ($w=0.2$) policies, representation asymmetry detection, and one-click Audit Memorandum export.
-- **AI Rationale & Explainability:** Dual-engine architecture featuring a server-side Google Gemini 2.5 Flash adapter for generative rationale generation with seamless fallback to deterministic rule-based explainability when running offline or without credentials.
+- **AI Rationale & Explainability:** Dual-engine architecture featuring Groq (Qwen 2.5 32B / 72B / gpt-oss-120b) and Google Gemini 2.5 Flash adapters for generative rationale generation with sub-second in-memory LRU caching and seamless fallback to deterministic rule-based explainability when running offline or without credentials.
 - **Role-Based Access Control & Better-Auth:** Multi-persona authentication system with instant role switching between Municipal Planners (e.g. Maya Sundaram), Civic Auditors (e.g. Rajesh Sharma), and Citizen Contributors (e.g. Priya Anandan). Endorsements require certified credentials while public citizen commentary is preserved in immutable audit logs.
 - **Formal Sign-Off & Audit Trail:** Revision-controlled municipal review flow with SHA-256 evidence hashing preventing concurrency race conditions (`HTTP 409 Conflict`) and cryptographic reviewer attribution.
+
+---
+
+## Submission Materials & Documentation
+
+- **Pitch Deck (PDF):** [CivicPriorities-PitchDeck.pdf](./CivicPriorities-PitchDeck.pdf)
+- **Pitch Deck (PowerPoint):** [CivicPriorities-PitchDeck.pptx](./CivicPriorities-PitchDeck.pptx)
+- **Project Overview & Architecture Guide:** [PROJECT_OVERVIEW.md](./PROJECT_OVERVIEW.md) (Complete guide on methodology, formulas, pilot cities, API contracts, and performance benchmarks)
+- **Deployment Runbook:** [DEPLOYMENT.md](./DEPLOYMENT.md) (Containerized Cloud Run and Vercel serverless instructions)
 
 ---
 

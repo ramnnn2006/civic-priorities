@@ -1,8 +1,0 @@
-{
-  "stage": "advisor",
-  "index": 6,
-  "requested_model": "gpt-6-astra",
-  "exit_code": 0,
-  "seconds": 25.12,
-  "has_response": true
-}

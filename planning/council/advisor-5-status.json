@@ -1,8 +1,0 @@
-{
-  "stage": "advisor",
-  "index": 5,
-  "requested_model": "gpt-5.5",
-  "exit_code": 0,
-  "seconds": 23.43,
-  "has_response": true
-}

@@ -7,7 +7,7 @@ These steps deploy the repository's `Dockerfile` as one public Cloud Run service
 - A Google Cloud project with billing enabled.
 - Google Cloud CLI installed and authenticated with `gcloud auth login`.
 - Permission to enable APIs, create service accounts and secrets, deploy Cloud Run services, and grant IAM roles. In a restricted project, an administrator must provide the equivalent permissions.
-- A Gemini API key only if a future server-side Gemini adapter will use it. The current server does **not** call Gemini: it keeps using the explicitly labelled local fallback. Supplying the secret now only provisions the deployment boundary.
+- Optional API keys for live AI rationale generation: `GROQ_API_KEY` (recommended for ultra-fast Qwen 2.5 audit rationales) or `GEMINI_API_KEY` (Google Gemini 2.5 Flash). If neither key is supplied, the service automatically falls back to the deterministic local rule engine (`aiMode: "local-fallback"`).
 
 Run all commands below from the repository root. Set the project ID before continuing:
 
@@ -71,7 +71,7 @@ curl --fail --silent --show-error "$SERVICE_URL/api/v1/config"
 gcloud run services describe "$SERVICE" --region "$REGION" --format='yaml(status.url,status.latestReadyRevisionName,status.traffic)'
 ```
 
-Expected health response is JSON with `status: "ok"`. With a mounted secret, this code currently reports `aiMode: "not-configured-in-demo"`; that accurately indicates the secret is present but no live Gemini adapter has been implemented.
+Expected health response is JSON with `status: "ok"`. With an active API key (`GROQ_API_KEY` or `GEMINI_API_KEY`), the endpoint reports `aiMode: "live"`. Without keys, it reliably reports `aiMode: "local-fallback"` with zero downtime.
 
 Inspect logs for the current revision:
 

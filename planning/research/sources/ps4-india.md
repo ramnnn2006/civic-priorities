@@ -1,1 +1,0 @@
-[{"page":1,"pages":1,"per\_page":2,"total":1,"sourceid":"2","lastupdated":"2026-07-13"},[{"indicator":{"id":"AG.YLD.CREL.KG","value":"Cereal yield (kg per hectare)"},"country":{"id":"IN","value":"India"},"countryiso3code":"IND","date":"2022","value":3564,"unit":"","obs\_status":"","decimal":0}]]
