@@ -878,30 +878,47 @@ Respond ONLY with valid JSON matching { "summary": "...", "reasons": [...], "cav
         </div>
       </header>
 
-      {currentPath === '/privacy' && <PrivacyPage onNavigate={navigate} />}
-      {currentPath === '/terms' && <TermsPage onNavigate={navigate} />}
-      {currentPath === '/thank-you' && <ThankYouPage onNavigate={navigate} lastConfirmed={lastConfirmedDraft} />}
-      {currentPath !== '/' && currentPath !== '/workbench' && currentPath !== '/privacy' && currentPath !== '/terms' && currentPath !== '/thank-you' && (
-        <NotFoundPage onNavigate={navigate} />
-      )}
+      <Suspense fallback={
+        <div className="shell" style={{ padding: '80px 20px', textAlign: 'center', color: '#56756e' }}>
+          <div style={{ display: 'inline-block', width: '28px', height: '28px', border: '3px solid #d1dbd8', borderTopColor: '#167e6b', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+          <p style={{ marginTop: '14px', fontSize: '13px' }}>Loading view...</p>
+        </div>
+      }>
+        {currentPath === '/privacy' && <PrivacyPage onNavigate={navigate} />}
+        {currentPath === '/terms' && <TermsPage onNavigate={navigate} />}
+        {currentPath === '/thank-you' && <ThankYouPage onNavigate={navigate} lastConfirmed={lastConfirmedDraft} />}
+        {currentPath !== '/' && currentPath !== '/workbench' && currentPath !== '/privacy' && currentPath !== '/terms' && currentPath !== '/thank-you' && (
+          <NotFoundPage onNavigate={navigate} />
+        )}
 
-      {currentPath === '/' && (
-        <LandingPage
-          onNavigate={navigate}
-          onSelectRegionAndCategory={(reg, cat) => {
-            setConfigId(reg)
-            setPlanningCategory(cat)
-          }}
-          onPickRole={(role) => {
-            const user = demoUsers.find((u) => u.role === role) || DEMO_PERSONAS.find((u) => u.role === role)
-            if (user) switchPersona(user)
-            navigate('/workbench')
-          }}
-        />
-      )}
+        {currentPath === '/' && (
+          <LandingPage
+            onNavigate={navigate}
+            onSelectRegionAndCategory={(reg, cat) => {
+              setConfigId(reg)
+              setPlanningCategory(cat)
+            }}
+            onPickRole={(role) => {
+              const user = demoUsers.find((u) => u.role === role) || DEMO_PERSONAS.find((u) => u.role === role)
+              if (user) switchPersona(user)
+              navigate('/workbench')
+            }}
+          />
+        )}
+      </Suspense>
 
       {currentPath === '/workbench' && (
         <>
+          <div className="workflow-nav-bar shell" aria-label="Workbench workflow quick jump">
+            <span className="workflow-nav-tag">Steps:</span>
+            <div className="workflow-nav-links">
+              <a href="#workspace" className="workflow-nav-link"><span>1</span> Intake Requests</a>
+              <a href="#clusters" className="workflow-nav-link"><span>2</span> Evidence & Clusters</a>
+              <a href="#policy-section" className="workflow-nav-link"><span>3</span> Policy Lens</a>
+              <a href="#ranking-section" className="workflow-nav-link"><span>4</span> Ranked Candidates</a>
+              <a href="#review-section" className="workflow-nav-link"><span>5</span> Formal Sign-off</a>
+            </div>
+          </div>
           <section className="hero shell" id="top">
         <div className="hero-copy">
           <p className="eyebrow"><span /> Evidence-gated civic planning</p>
