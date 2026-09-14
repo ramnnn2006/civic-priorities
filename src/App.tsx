@@ -982,7 +982,7 @@ Respond ONLY with valid JSON matching { "summary": "...", "reasons": [...], "cav
         </div>
 
         {/* Cluster Demographics & Collection Footprint */}
-        <div className="cluster-strip" aria-label="Reporting Cluster Demographics">
+        <div className="cluster-strip" id="clusters" aria-label="Reporting Cluster Demographics">
           <div className="cluster-strip-head">
             <h4><Activity size={15} /> Neighborhood overview and intake status ({config.state})</h4>
             <span className="pill pill-aqua">Active 90-day cycle</span>
@@ -1109,7 +1109,7 @@ Respond ONLY with valid JSON matching { "summary": "...", "reasons": [...], "cav
             )}
           </section>
 
-          <aside className="panel policy-panel" aria-labelledby="policy-title">
+          <aside className="panel policy-panel" id="policy-section" aria-labelledby="policy-title">
             <div className="panel-title">
               <div><span className="step">03</span><h3 id="policy-title">Policy lens</h3></div>
               <span className="policy-version">v1.0</span>
@@ -1175,7 +1175,7 @@ Respond ONLY with valid JSON matching { "summary": "...", "reasons": [...], "cav
           </div>
         )}
 
-        <section className="results-section" aria-labelledby="results-title">
+        <section className="results-section" id="ranking-section" aria-labelledby="results-title">
           <div className="results-heading">
             <div>
               <p className="eyebrow"><span /> Decision support</p>
@@ -1212,7 +1212,7 @@ Respond ONLY with valid JSON matching { "summary": "...", "reasons": [...], "cav
               <CandidateRow key={candidate.id} candidate={candidate} rank={index + 1} currency={config.currency} />
             ))}
           </div>
-          <div className="review-bar">
+          <div className="review-bar" id="review-section">
             <div>
               {top ? (
                 <><BadgeCheck size={19} /><span><strong>{top.project}</strong> is in the current draft shortlist. This is a recommendation, not an approval to spend funds.</span></>

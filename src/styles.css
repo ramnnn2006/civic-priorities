@@ -969,3 +969,82 @@ h1 em { color: #1d8877; font-style: italic; }
     padding: 32px 20px;
   }
 }
+
+/* Workflow Quick Jump Navigation Bar */
+.workflow-nav-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  margin: 12px auto 20px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(8px);
+  border: 1px solid #d4deda;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(20, 53, 50, 0.04);
+  position: sticky;
+  top: 72px;
+  z-index: 40;
+}
+
+.workflow-nav-tag {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #177e6b;
+  flex-shrink: 0;
+}
+
+.workflow-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  white-space: nowrap;
+}
+
+.workflow-nav-links::-webkit-scrollbar {
+  display: none;
+}
+
+.workflow-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2e554e;
+  text-decoration: none;
+  background: #f1f7f5;
+  border: 1px solid #cfded9;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.workflow-nav-link span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #177e6b;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.workflow-nav-link:hover {
+  background: #177e6b;
+  color: #ffffff;
+  border-color: #177e6b;
+}
+
+.workflow-nav-link:hover span {
+  background: #ffffff;
+  color: #177e6b;
+}
+
