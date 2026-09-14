@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { ChangeEvent, useEffect, useMemo, useRef, useState, lazy, Suspense, type ReactNode } from 'react'
 import {
   ArrowDown, ArrowUp, BadgeCheck, Bot, ChevronDown, CircleAlert, FileUp,
   FileText, Lightbulb, MapPin, MessageSquareText, Mic,
@@ -9,11 +9,12 @@ import { ThinkingOrb } from 'thinking-orbs'
 import { categoryMeta, configs } from './data'
 import { findCategory, makeDraft, scoreCandidates } from './engine'
 import type { CandidateResult, ConfigId, Draft, AuthUser, UserRole, ReviewerMetadata } from './types'
-import { PrivacyPage } from './pages/PrivacyPage'
-import { TermsPage } from './pages/TermsPage'
-import { ThankYouPage } from './pages/ThankYouPage'
-import { NotFoundPage } from './pages/NotFoundPage'
-import { LandingPage } from './pages/LandingPage'
+
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage').then((m) => ({ default: m.PrivacyPage })))
+const TermsPage = lazy(() => import('./pages/TermsPage').then((m) => ({ default: m.TermsPage })))
+const ThankYouPage = lazy(() => import('./pages/ThankYouPage').then((m) => ({ default: m.ThankYouPage })))
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })))
+const LandingPage = lazy(() => import('./pages/LandingPage').then((m) => ({ default: m.LandingPage })))
 
 interface ToastNotification {
   id: string

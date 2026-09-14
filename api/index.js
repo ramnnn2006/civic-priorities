@@ -1,4 +1,5 @@
 // server/index.ts
+import compression from "compression";
 import express from "express";
 import { createHash, randomUUID } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
@@ -155,8 +156,23 @@ var getSession = (sessions, id) => {
   session.touchedAt = now;
   return session;
 };
+var rationaleCache = /* @__PURE__ */ new Map();
+var RATIONALE_CACHE_TTL_MS = 60 * 60 * 1e3;
 async function getPlanRationale(plan, config, clientGroqKey) {
   const groqKey = clientGroqKey || process.env.GROQ_API_KEY;
+  const cacheKey = `${plan.configId}:${plan.category}:${plan.evidenceHash}:${groqKey ? "live" : "offline"}`;
+  const cached = rationaleCache.get(cacheKey);
+  if (cached && Date.now() - cached.savedAt < RATIONALE_CACHE_TTL_MS) {
+    return { provider: cached.provider, rationale: cached.rationale, isHit: true };
+  }
+  const saveToCache = (provider, rationale) => {
+    rationaleCache.set(cacheKey, { provider, rationale, savedAt: Date.now() });
+    if (rationaleCache.size > 200) {
+      const oldestKey = rationaleCache.keys().next().value;
+      if (oldestKey) rationaleCache.delete(oldestKey);
+    }
+    return { provider, rationale, isHit: false };
+  };
   if (groqKey) {
     const prompt = `You are an AI civic planning auditor for an evidence-gated municipal prioritization system.
 Region: ${config.country}, ${config.state} (${config.language})
@@ -200,14 +216,11 @@ Respond ONLY with a valid JSON object matching { "summary": "...", "reasons": [.
           if (rawText) {
             const parsed = JSON.parse(rawText);
             if (parsed && typeof parsed.summary === "string") {
-              return {
-                provider: `groq-${modelToTry}`,
-                rationale: {
-                  summary: parsed.summary,
-                  reasons: Array.isArray(parsed.reasons) ? parsed.reasons.map(String) : [],
-                  caveats: Array.isArray(parsed.caveats) ? parsed.caveats.map(String) : []
-                }
-              };
+              return saveToCache(`groq-${modelToTry}`, {
+                summary: parsed.summary,
+                reasons: Array.isArray(parsed.reasons) ? parsed.reasons.map(String) : [],
+                caveats: Array.isArray(parsed.caveats) ? parsed.caveats.map(String) : []
+              });
             }
           }
         }
@@ -244,14 +257,11 @@ Respond ONLY with a valid JSON object matching { "summary": "...", "reasons": [.
         if (rawText) {
           const parsed = JSON.parse(rawText);
           if (parsed && typeof parsed.summary === "string") {
-            return {
-              provider: "gemini-2.5-flash",
-              rationale: {
-                summary: parsed.summary,
-                reasons: Array.isArray(parsed.reasons) ? parsed.reasons.map(String) : [],
-                caveats: Array.isArray(parsed.caveats) ? parsed.caveats.map(String) : []
-              }
-            };
+            return saveToCache("gemini-2.5-flash", {
+              summary: parsed.summary,
+              reasons: Array.isArray(parsed.reasons) ? parsed.reasons.map(String) : [],
+              caveats: Array.isArray(parsed.caveats) ? parsed.caveats.map(String) : []
+            });
           }
         }
       }
@@ -260,21 +270,18 @@ Respond ONLY with a valid JSON object matching { "summary": "...", "reasons": [.
   }
   const top = plan.candidates.find((c) => c.selected);
   const blocked = plan.candidates.filter((c) => c.eligibility !== "ELIGIBLE");
-  return {
-    provider: "deterministic-rules",
-    rationale: {
-      summary: top ? `${top.project} in ${top.label} is ranked highest based on ${top.requestUnits} verified community requests (${top.rate.toFixed(1)}/1k residents) and a ${(top.gap * 100).toFixed(0)}% infrastructure deficit.` : "No project candidate was shortlisted under the current constraints.",
-      reasons: [
-        `The formula combines normalized demand D (${top ? top.demand.toFixed(2) : "0"}) and infrastructure gap G (${top ? top.gap.toFixed(2) : "0"}).`,
-        blocked.length > 0 ? `${blocked.map((b) => b.project).join(", ")} is blocked from scoring due to missing investment inventory evidence.` : "All evaluated candidates possess verified baseline investment evidence.",
-        "Selection respects the budgetary envelope without cross-category confounding."
-      ],
-      caveats: [
-        groqKey || apiKey ? "Live AI call timed out or failed; deterministic explanation used." : "No Groq or Gemini API key configured in server environment; deterministic audit rationale returned.",
-        "This calculation is an evidence-gated decision support prototype, not a binding government allocation."
-      ]
-    }
-  };
+  return saveToCache("deterministic-rules", {
+    summary: top ? `${top.project} in ${top.label} is ranked highest based on ${top.requestUnits} verified community requests (${top.rate.toFixed(1)}/1k residents) and a ${(top.gap * 100).toFixed(0)}% infrastructure deficit.` : "No project candidate was shortlisted under the current constraints.",
+    reasons: [
+      `The formula combines normalized demand D (${top ? top.demand.toFixed(2) : "0"}) and infrastructure gap G (${top ? top.gap.toFixed(2) : "0"}).`,
+      blocked.length > 0 ? `${blocked.map((b) => b.project).join(", ")} is blocked from scoring due to missing investment inventory evidence.` : "All evaluated candidates possess verified baseline investment evidence.",
+      "Selection respects the budgetary envelope without cross-category confounding."
+    ],
+    caveats: [
+      groqKey || apiKey ? "Live AI call timed out or failed; deterministic explanation used." : "No Groq or Gemini API key configured in server environment; deterministic audit rationale returned.",
+      "This calculation is an evidence-gated decision support prototype, not a binding government allocation."
+    ]
+  });
 }
 function createApp() {
   const app2 = express();
@@ -311,6 +318,8 @@ function createApp() {
     }
   ];
   seedUsers.forEach((u) => users.set(u.id, u));
+  app2.disable("x-powered-by");
+  app2.use(compression({ threshold: 1024 }));
   app2.use(express.json({ limit: "1mb" }));
   app2.get("/api/auth/demo-users", (_req, res) => {
     res.json(Array.from(users.values()).map(({ passwordHash, ...u }) => u));
@@ -384,7 +393,10 @@ function createApp() {
       timestamp: (/* @__PURE__ */ new Date()).toISOString()
     });
   });
-  app2.get("/api/v1/config", (_req, res) => res.json(configs.map(({ regions, ...config }) => ({ ...config, regions: regions.map(({ population, coverage, seededRequests, costMinor, budgetMinor, ...region }) => region), limitations: ["Synthetic planning fixtures", "Local extraction fallback until a server-side Gemini adapter is configured"] }))));
+  app2.get("/api/v1/config", (_req, res) => {
+    res.setHeader("Cache-Control", "public, max-age=3600, stale-while-revalidate=86400");
+    return res.json(configs.map(({ regions, ...config }) => ({ ...config, regions: regions.map(({ population, coverage, seededRequests, costMinor, budgetMinor, ...region }) => region), limitations: ["Synthetic planning fixtures", "Local extraction fallback until a server-side Gemini adapter is configured"] })));
+  });
   app2.post("/api/v1/intake/analyze", (req, res) => {
     const body = z.object({ sessionId: uuid, configId, regionId: z.string().min(1), text: z.string().min(1).max(5e3), channel: z.enum(["text", "voice", "message_import"]).default("text") }).safeParse(req.body);
     if (!body.success) return apiError(res, 422, "Invalid intake request");
@@ -492,16 +504,18 @@ function createApp() {
     if (!plan) return;
     const config = getConfig(plan.configId);
     const clientKey = req.headers["x-groq-key"] || req.query.groqKey;
-    const { provider, rationale } = await getPlanRationale(plan, config, clientKey);
-    res.json({ planId: plan.id, revision: plan.revision, evidenceHash: plan.evidenceHash, provider, rationale });
+    const result = await getPlanRationale(plan, config, clientKey);
+    res.setHeader("X-Cache", result.isHit ? "HIT" : "MISS");
+    res.json({ planId: plan.id, revision: plan.revision, evidenceHash: plan.evidenceHash, provider: result.provider, rationale: result.rationale, cached: result.isHit });
   });
   app2.post("/api/v1/plans/:id/explain", async (req, res) => {
     const plan = loadPlan(req, res);
     if (!plan) return;
     const config = getConfig(plan.configId);
     const clientKey = req.headers["x-groq-key"] || req.body?.groqKey || req.query.groqKey;
-    const { provider, rationale } = await getPlanRationale(plan, config, clientKey);
-    res.json({ planId: plan.id, revision: plan.revision, evidenceHash: plan.evidenceHash, provider, rationale });
+    const result = await getPlanRationale(plan, config, clientKey);
+    res.setHeader("X-Cache", result.isHit ? "HIT" : "MISS");
+    res.json({ planId: plan.id, revision: plan.revision, evidenceHash: plan.evidenceHash, provider: result.provider, rationale: result.rationale, cached: result.isHit });
   });
   app2.post("/api/v1/plans/:id/review", (req, res) => {
     const body = z.object({
@@ -532,7 +546,15 @@ function createApp() {
   app2.use("/api", (_req, res) => apiError(res, 404, "API route not found"));
   const dist = path.join(root, "dist");
   if (existsSync(dist)) {
-    app2.use(express.static(dist));
+    app2.use(express.static(dist, {
+      maxAge: "1y",
+      immutable: true,
+      setHeaders: (res, filePath) => {
+        if (filePath.endsWith(".html")) {
+          res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
+        }
+      }
+    }));
     app2.use((req, res) => req.accepts("html") ? res.sendFile(path.join(dist, "index.html")) : res.status(404).end());
   }
   return app2;
