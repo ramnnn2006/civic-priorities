@@ -63,7 +63,67 @@ const getSession = (sessions: Map<string, Session>, id: string) => {
   return session
 }
 
-async function getPlanRationale(plan: StoredPlan, config: ReturnType<typeof getConfig>) {
+async function getPlanRationale(plan: StoredPlan, config: ReturnType<typeof getConfig>, clientGroqKey?: string) {
+  const groqKey = clientGroqKey || process.env.GROQ_API_KEY
+  if (groqKey) {
+    try {
+      const prompt = `You are an AI civic planning auditor for an evidence-gated municipal prioritization system.
+Region: ${config.country}, ${config.state} (${config.language})
+Infrastructure Category: ${plan.category}
+Candidates evaluated:
+${JSON.stringify(plan.candidates, null, 2)}
+
+Provide an audit rationale in JSON format with:
+"summary": A clear 1-2 sentence executive explanation of the ranking and top candidate.
+"reasons": An array of 2-3 specific evidence-backed observations (referencing request counts, rates per 1,000, infrastructure gap, and investment-block status).
+"caveats": An array of 2 essential civic caveats (e.g. digital submission disparity, synthetic fixtures, requirement for human verification).
+Respond ONLY with a valid JSON object matching { "summary": "...", "reasons": [...], "caveats": [...] }.`
+
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${groqKey}`
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are an AI civic planning auditor for an evidence-gated municipal prioritization system. Return only valid JSON.'
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          response_format: { type: 'json_object' }
+        }),
+        signal: AbortSignal.timeout(8000)
+      })
+
+      if (response.ok) {
+        const json = await response.json() as { choices?: { message?: { content?: string } }[] }
+        const rawText = json.choices?.[0]?.message?.content
+        if (rawText) {
+          const parsed = JSON.parse(rawText) as { summary?: string; reasons?: string[]; caveats?: string[] }
+          if (parsed && typeof parsed.summary === 'string') {
+            return {
+              provider: 'groq-llama-3.3-70b',
+              rationale: {
+                summary: parsed.summary,
+                reasons: Array.isArray(parsed.reasons) ? parsed.reasons.map(String) : [],
+                caveats: Array.isArray(parsed.caveats) ? parsed.caveats.map(String) : []
+              }
+            }
+          }
+        }
+      }
+    } catch {
+      // Fall through to Gemini or deterministic fallback
+    }
+  }
+
   const apiKey = process.env.GEMINI_API_KEY
   if (apiKey) {
     try {
@@ -127,7 +187,7 @@ Respond ONLY with a valid JSON object matching { "summary": "...", "reasons": [.
         'Selection respects the budgetary envelope without cross-category confounding.'
       ],
       caveats: [
-        apiKey ? 'Live Gemini call timed out or failed; deterministic explanation used.' : 'No Gemini API key configured in server environment; deterministic audit rationale returned.',
+        groqKey || apiKey ? 'Live AI call timed out or failed; deterministic explanation used.' : 'No Groq or Gemini API key configured in server environment; deterministic audit rationale returned.',
         'This calculation is an evidence-gated decision support prototype, not a binding government allocation.'
       ]
     }
@@ -239,13 +299,17 @@ export function createApp() {
     return res.json({ success: true })
   })
 
-  app.get('/health', (_req, res) => res.json({
-    status: 'ok',
-    aiMode: process.env.GEMINI_API_KEY ? 'gemini-live' : 'local-fallback',
-    provider: process.env.GEMINI_API_KEY ? 'google-gemini' : 'deterministic-engine',
-    persistence: 'ephemeral-demo',
-    timestamp: new Date().toISOString()
-  }))
+  app.get('/health', (_req, res) => {
+    const hasGroq = Boolean(process.env.GROQ_API_KEY)
+    const hasGemini = Boolean(process.env.GEMINI_API_KEY)
+    return res.json({
+      status: 'ok',
+      aiMode: hasGroq ? 'groq-live' : (hasGemini ? 'gemini-live' : 'local-fallback'),
+      provider: hasGroq ? 'groq-llama-3.3' : (hasGemini ? 'google-gemini' : 'deterministic-engine'),
+      persistence: 'ephemeral-demo',
+      timestamp: new Date().toISOString()
+    })
+  })
   app.get('/api/v1/config', (_req, res) => res.json(configs.map(({ regions, ...config }) => ({ ...config, regions: regions.map(({ population, coverage, seededRequests, costMinor, budgetMinor, ...region }) => region), limitations: ['Synthetic planning fixtures', 'Local extraction fallback until a server-side Gemini adapter is configured'] }))))
 
   app.post('/api/v1/intake/analyze', (req, res) => {
@@ -338,14 +402,16 @@ export function createApp() {
     const plan = loadPlan(req, res)
     if (!plan) return
     const config = getConfig(plan.configId)
-    const { provider, rationale } = await getPlanRationale(plan, config)
+    const clientKey = (req.headers['x-groq-key'] as string) || (req.query.groqKey as string)
+    const { provider, rationale } = await getPlanRationale(plan, config, clientKey)
     res.json({ planId: plan.id, revision: plan.revision, evidenceHash: plan.evidenceHash, provider, rationale })
   })
   app.post('/api/v1/plans/:id/explain', async (req, res) => {
     const plan = loadPlan(req, res)
     if (!plan) return
     const config = getConfig(plan.configId)
-    const { provider, rationale } = await getPlanRationale(plan, config)
+    const clientKey = (req.headers['x-groq-key'] as string) || (req.body?.groqKey as string) || (req.query.groqKey as string)
+    const { provider, rationale } = await getPlanRationale(plan, config, clientKey)
     res.json({ planId: plan.id, revision: plan.revision, evidenceHash: plan.evidenceHash, provider, rationale })
   })
   app.post('/api/v1/plans/:id/review', (req, res) => {
