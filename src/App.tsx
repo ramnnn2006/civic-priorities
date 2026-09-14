@@ -537,40 +537,47 @@ Provide an audit rationale in valid JSON format with:
 "caveats": An array of 2 essential civic caveats.
 Respond ONLY with valid JSON matching { "summary": "...", "reasons": [...], "caveats": [...] }.`
 
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${activeGroqKey}`
-          },
-          body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
-            messages: [
-              { role: 'system', content: 'You are an AI civic planning auditor. Always respond with valid JSON.' },
-              { role: 'user', content: prompt }
-            ],
-            response_format: { type: 'json_object' }
-          }),
-          signal: AbortSignal.timeout(8000)
-        })
-        if (response.ok) {
-          const data = await response.json() as { choices?: { message?: { content?: string } }[] }
-          const raw = data.choices?.[0]?.message?.content
-          if (raw) {
-            const parsed = JSON.parse(raw) as { summary?: string; reasons?: string[]; caveats?: string[] }
-            if (parsed && typeof parsed.summary === 'string') {
-              setExplainData({
-                provider: 'groq-llama-3.3-70b',
-                evidenceHash: evidenceHash || undefined,
-                rationale: {
-                  summary: parsed.summary,
-                  reasons: Array.isArray(parsed.reasons) ? parsed.reasons.map(String) : [],
-                  caveats: Array.isArray(parsed.caveats) ? parsed.caveats.map(String) : []
+        const modelsToTry = ['qwen/qwen3.8-27b', 'openai/gpt-oss-120b']
+        for (const modelToTry of modelsToTry) {
+          try {
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${activeGroqKey}`
+              },
+              body: JSON.stringify({
+                model: modelToTry,
+                messages: [
+                  { role: 'system', content: 'You are an AI civic planning auditor. Always respond with valid JSON.' },
+                  { role: 'user', content: prompt }
+                ],
+                response_format: { type: 'json_object' }
+              }),
+              signal: AbortSignal.timeout(8000)
+            })
+            if (response.ok) {
+              const data = await response.json() as { choices?: { message?: { content?: string } }[] }
+              const raw = data.choices?.[0]?.message?.content
+              if (raw) {
+                const parsed = JSON.parse(raw) as { summary?: string; reasons?: string[]; caveats?: string[] }
+                if (parsed && typeof parsed.summary === 'string') {
+                  setExplainData({
+                    provider: `groq-${modelToTry}`,
+                    evidenceHash: evidenceHash || undefined,
+                    rationale: {
+                      summary: parsed.summary,
+                      reasons: Array.isArray(parsed.reasons) ? parsed.reasons.map(String) : [],
+                      caveats: Array.isArray(parsed.caveats) ? parsed.caveats.map(String) : []
+                    }
+                  })
+                  setExplainLoading(false)
+                  return
                 }
-              })
-              setExplainLoading(false)
-              return
+              }
             }
+          } catch {
+            // Try next model if available
           }
         }
       } catch {
@@ -1290,7 +1297,7 @@ Respond ONLY with valid JSON matching { "summary": "...", "reasons": [...], "cav
                     <div style={{ fontSize: '11.5px', color: '#56756e' }}>
                       Engine:{' '}
                       {explainData?.provider?.startsWith('groq') ? (
-                        <span className="ai-badge groq"><Sparkles size={11} /> Groq Llama 3.3 70B</span>
+                        <span className="ai-badge groq"><Sparkles size={11} /> Groq Live ({explainData.provider.replace('groq-', '')})</span>
                       ) : explainData?.provider?.startsWith('gemini') ? (
                         <span className="ai-badge gemini"><Sparkles size={11} /> Google Gemini 2.5</span>
                       ) : (
@@ -1305,7 +1312,7 @@ Respond ONLY with valid JSON matching { "summary": "...", "reasons": [...], "cav
                       {groqKeyInput && <span style={{ fontSize: '10px', color: '#167e6b', fontWeight: 600 }}>Active</span>}
                     </div>
                     <p style={{ fontSize: '11.5px', color: '#68594b', margin: '0 0 8px 0' }}>
-                      Paste a free Groq API key (starts with gsk_) to run live Llama 3.3 explanations directly:
+                      Paste a free Groq API key (starts with gsk_) to run live audit explanations directly:
                     </p>
                     <div className="groq-config-input-row">
                       <input

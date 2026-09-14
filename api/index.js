@@ -1,7 +1,7 @@
 // server/index.ts
 import express from "express";
 import { createHash, randomUUID } from "node:crypto";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
@@ -110,6 +110,34 @@ function scoreCandidates(regions, drafts, weight, missingPlan) {
 // server/index.ts
 var dirname = path.dirname(fileURLToPath(import.meta.url));
 var root = path.resolve(dirname, "..");
+function loadEnvFiles() {
+  const candidates = [".env.local", ".env"];
+  for (const file of candidates) {
+    const filePath = path.resolve(root, file);
+    if (existsSync(filePath)) {
+      try {
+        const content = readFileSync(filePath, "utf8");
+        for (const line of content.split("\n")) {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed.startsWith("#")) continue;
+          const eqIdx = trimmed.indexOf("=");
+          if (eqIdx > 0) {
+            const key = trimmed.slice(0, eqIdx).trim();
+            let val = trimmed.slice(eqIdx + 1).trim();
+            if (val.startsWith('"') && val.endsWith('"') || val.startsWith("'") && val.endsWith("'")) {
+              val = val.slice(1, -1);
+            }
+            if (process.env[key] === void 0) {
+              process.env[key] = val;
+            }
+          }
+        }
+      } catch {
+      }
+    }
+  }
+}
+loadEnvFiles();
 var configId = z.enum(["IN-TN", "IN-UP", "BR-PE"]);
 var uuid = z.string().uuid();
 var sessionTtlMs = 24 * 60 * 60 * 1e3;
@@ -130,8 +158,7 @@ var getSession = (sessions, id) => {
 async function getPlanRationale(plan, config, clientGroqKey) {
   const groqKey = clientGroqKey || process.env.GROQ_API_KEY;
   if (groqKey) {
-    try {
-      const prompt = `You are an AI civic planning auditor for an evidence-gated municipal prioritization system.
+    const prompt = `You are an AI civic planning auditor for an evidence-gated municipal prioritization system.
 Region: ${config.country}, ${config.state} (${config.language})
 Infrastructure Category: ${plan.category}
 Candidates evaluated:
@@ -142,46 +169,50 @@ Provide an audit rationale in JSON format with:
 "reasons": An array of 2-3 specific evidence-backed observations (referencing request counts, rates per 1,000, infrastructure gap, and investment-block status).
 "caveats": An array of 2 essential civic caveats (e.g. digital submission disparity, synthetic fixtures, requirement for human verification).
 Respond ONLY with a valid JSON object matching { "summary": "...", "reasons": [...], "caveats": [...] }.`;
-      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${groqKey}`
-        },
-        body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages: [
-            {
-              role: "system",
-              content: "You are an AI civic planning auditor for an evidence-gated municipal prioritization system. Return only valid JSON."
-            },
-            {
-              role: "user",
-              content: prompt
-            }
-          ],
-          response_format: { type: "json_object" }
-        }),
-        signal: AbortSignal.timeout(8e3)
-      });
-      if (response.ok) {
-        const json = await response.json();
-        const rawText = json.choices?.[0]?.message?.content;
-        if (rawText) {
-          const parsed = JSON.parse(rawText);
-          if (parsed && typeof parsed.summary === "string") {
-            return {
-              provider: "groq-llama-3.3-70b",
-              rationale: {
-                summary: parsed.summary,
-                reasons: Array.isArray(parsed.reasons) ? parsed.reasons.map(String) : [],
-                caveats: Array.isArray(parsed.caveats) ? parsed.caveats.map(String) : []
+    const modelsToTry = [process.env.GROQ_MODEL || "qwen/qwen3.8-27b", "openai/gpt-oss-120b"];
+    for (const modelToTry of modelsToTry) {
+      try {
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${groqKey}`
+          },
+          body: JSON.stringify({
+            model: modelToTry,
+            messages: [
+              {
+                role: "system",
+                content: "You are an AI civic planning auditor for an evidence-gated municipal prioritization system. Return only valid JSON."
+              },
+              {
+                role: "user",
+                content: prompt
               }
-            };
+            ],
+            response_format: { type: "json_object" }
+          }),
+          signal: AbortSignal.timeout(8e3)
+        });
+        if (response.ok) {
+          const json = await response.json();
+          const rawText = json.choices?.[0]?.message?.content;
+          if (rawText) {
+            const parsed = JSON.parse(rawText);
+            if (parsed && typeof parsed.summary === "string") {
+              return {
+                provider: `groq-${modelToTry}`,
+                rationale: {
+                  summary: parsed.summary,
+                  reasons: Array.isArray(parsed.reasons) ? parsed.reasons.map(String) : [],
+                  caveats: Array.isArray(parsed.caveats) ? parsed.caveats.map(String) : []
+                }
+              };
+            }
           }
         }
+      } catch {
       }
-    } catch {
     }
   }
   const apiKey = process.env.GEMINI_API_KEY;
@@ -344,10 +375,11 @@ function createApp() {
   app2.get("/health", (_req, res) => {
     const hasGroq = Boolean(process.env.GROQ_API_KEY);
     const hasGemini = Boolean(process.env.GEMINI_API_KEY);
+    const groqModel = process.env.GROQ_MODEL || "qwen/qwen3.8-27b";
     return res.json({
       status: "ok",
       aiMode: hasGroq ? "groq-live" : hasGemini ? "gemini-live" : "local-fallback",
-      provider: hasGroq ? "groq-llama-3.3" : hasGemini ? "google-gemini" : "deterministic-engine",
+      provider: hasGroq ? `groq-${groqModel}` : hasGemini ? "google-gemini" : "deterministic-engine",
       persistence: "ephemeral-demo",
       timestamp: (/* @__PURE__ */ new Date()).toISOString()
     });
