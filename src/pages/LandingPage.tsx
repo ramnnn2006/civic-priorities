@@ -24,6 +24,7 @@ interface LandingPageProps {
 
 export function LandingPage({ onNavigate, onSelectRegionAndCategory, onPickRole }: LandingPageProps) {
   const [selectedConfigId, setSelectedConfigId] = useState<ConfigId>('IN-TN')
+  const [selectedCategory, setSelectedCategory] = useState<'water' | 'roads' | 'lighting'>('water')
   const [demandWeight, setDemandWeight] = useState(0.55)
 
   const activeConfig = useMemo(() => {
@@ -31,13 +32,17 @@ export function LandingPage({ onNavigate, onSelectRegionAndCategory, onPickRole 
   }, [selectedConfigId])
 
   const showcaseCandidates = useMemo(() => {
+    const matching = activeConfig.regions.filter((r) => r.category === selectedCategory)
+    const regionsToScore = matching.length > 0
+      ? matching
+      : activeConfig.regions.filter((r) => r.category === activeConfig.regions[0]?.category)
     return scoreCandidates(
-      activeConfig.regions,
+      regionsToScore,
       [],
       demandWeight,
       false
     )
-  }, [activeConfig, demandWeight])
+  }, [activeConfig, selectedCategory, demandWeight])
 
   const handleLaunchWorkbench = (regionId: ConfigId, category: 'water' | 'roads' | 'lighting') => {
     onSelectRegionAndCategory(regionId, category)
@@ -99,7 +104,7 @@ export function LandingPage({ onNavigate, onSelectRegionAndCategory, onPickRole 
           <button
             type="button"
             className="button button-primary small"
-            onClick={() => handleLaunchWorkbench(selectedConfigId, activeConfig.regions[0]?.category ?? 'water')}
+            onClick={() => handleLaunchWorkbench(selectedConfigId, selectedCategory)}
           >
             Launch in Workbench <ArrowRight size={14} />
           </button>
@@ -108,24 +113,33 @@ export function LandingPage({ onNavigate, onSelectRegionAndCategory, onPickRole 
         <div className="showcase-region-tabs" role="tablist">
           <button
             type="button"
-            className={`showcase-region-tab ${selectedConfigId === 'IN-TN' ? 'active' : ''}`}
-            onClick={() => setSelectedConfigId('IN-TN')}
+            className={`showcase-region-tab ${selectedConfigId === 'IN-TN' && selectedCategory === 'water' ? 'active' : ''}`}
+            onClick={() => {
+              setSelectedConfigId('IN-TN')
+              setSelectedCategory('water')
+            }}
           >
             <Droplets size={14} style={{ display: 'inline', marginRight: '6px' }} />
             Tamil Nadu (Drinking Water)
           </button>
           <button
             type="button"
-            className={`showcase-region-tab ${selectedConfigId === 'IN-UP' ? 'active' : ''}`}
-            onClick={() => setSelectedConfigId('IN-UP')}
+            className={`showcase-region-tab ${selectedConfigId === 'IN-UP' && selectedCategory === 'roads' ? 'active' : ''}`}
+            onClick={() => {
+              setSelectedConfigId('IN-UP')
+              setSelectedCategory('roads')
+            }}
           >
             <RoadIcon size={14} style={{ display: 'inline', marginRight: '6px' }} />
             Uttar Pradesh (Flood Roads)
           </button>
           <button
             type="button"
-            className={`showcase-region-tab ${selectedConfigId === 'BR-PE' ? 'active' : ''}`}
-            onClick={() => setSelectedConfigId('BR-PE')}
+            className={`showcase-region-tab ${selectedConfigId === 'BR-PE' && selectedCategory === 'lighting' ? 'active' : ''}`}
+            onClick={() => {
+              setSelectedConfigId('BR-PE')
+              setSelectedCategory('lighting')
+            }}
           >
             <Sun size={14} style={{ display: 'inline', marginRight: '6px' }} />
             Pernambuco (Solar Lighting)
