@@ -138,8 +138,9 @@ function App() {
 
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
     try {
+      const token = localStorage.getItem('civic_token')
       const saved = localStorage.getItem('civic_user')
-      if (saved) return JSON.parse(saved) as AuthUser
+      if (token && saved) return JSON.parse(saved) as AuthUser
     } catch {}
     return null
   })
@@ -604,7 +605,10 @@ Respond ONLY with valid JSON matching { "summary": "...", "reasons": [...], "cav
 
   const switchPersona = (persona: AuthUser) => {
     setCurrentUser(persona)
+    const token = `demo-${persona.id}`
+    setAuthToken(token)
     localStorage.setItem('civic_user', JSON.stringify(persona))
+    localStorage.setItem('civic_token', token)
     setShowAuthModal(false)
     addToast(`Switched persona to ${persona.name} (${persona.role})`, 'info')
   }
